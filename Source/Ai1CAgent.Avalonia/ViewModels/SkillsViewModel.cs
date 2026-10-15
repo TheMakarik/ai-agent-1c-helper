@@ -4,6 +4,7 @@ using System.Reactive;
 using Ai1CAgent.Avalonia.Services;
 using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Models;
+using FluentIcons.Common;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
@@ -30,7 +31,9 @@ public sealed class SkillsViewModel : ViewModelBase
 
     public ObservableCollection<SkillNodeViewModel> Roots { get; } = [];
 
-    public Interaction<SkillEditRequest, string?> EditSkill { get; } = new();
+    public Interaction<SkillEditRequest, SkillEditResult?> EditSkill { get; } = new();
+
+    public bool HasProject => _projectId is not null;
 
     public SkillNodeViewModel? SelectedNode
     {
@@ -50,6 +53,38 @@ public sealed class SkillsViewModel : ViewModelBase
     public void Reload(long? projectId)
     {
         _projectId = projectId;
+        this.RaisePropertyChanged(nameof(HasProject));
+        Build();
+    }
+
+    public void AddSkill(SkillScope scope)
+    {
+        if (scope is SkillScope.Local && _projectId is null)
+            return;
+
+        EditSkill.Handle(new SkillEditRequest("Новый скилл", string.Empty, Editable: true, AskName: true)).Subscribe(
+            result => ApplyNew(scope, result),
+            exception => _logger.LogError(exception, "Не удалось создать скилл"));
+    }
+
+    public void DeleteSkill(SkillNodeViewModel node)
+    {
+        if (!node.Editable || node.Name is not { } name)
+            return;
+
+        var scope = node.Category == "Local" ? SkillScope.Local : SkillScope.Global;
+        _skillStore.Delete(scope, _projectId, name);
+        Build();
+    }
+
+    private void ApplyNew(SkillScope scope, SkillEditResult? result)
+    {
+        var name = result?.Name.Trim();
+
+        if (result is null || string.IsNullOrEmpty(name))
+            return;
+
+        _skillStore.Write(scope, _projectId, name, result.Text);
         Build();
     }
 
@@ -59,25 +94,26 @@ public sealed class SkillsViewModel : ViewModelBase
 
         Roots.Add(new SkillNodeViewModel(
             "Системная Документация",
+            Icon.Book,
             isSkill: true,
             category: "System",
             name: "Системная документация"));
 
-        var oneC = new SkillNodeViewModel("Документация 1С");
+        var oneC = new SkillNodeViewModel("Документация 1С", Icon.Library);
         foreach (var name in _embeddedSkills.List("1C"))
-            oneC.Children.Add(new SkillNodeViewModel(name, isSkill: true, category: "1C", name: name));
+            oneC.Children.Add(new SkillNodeViewModel(name, Icon.DocumentText, isSkill: true, category: "1C", name: name));
         Roots.Add(oneC);
 
-        var global = new SkillNodeViewModel("Глобальная Документация");
+        var global = new SkillNodeViewModel("Глобальная Документация", Icon.Globe, canAddSkill: true);
         foreach (var name in _skillStore.List(SkillScope.Global, null))
-            global.Children.Add(new SkillNodeViewModel(name, isSkill: true, category: "Global", name: name, editable: true));
+            global.Children.Add(new SkillNodeViewModel(name, Icon.DocumentText, isSkill: true, category: "Global", name: name, editable: true));
         Roots.Add(global);
 
-        var local = new SkillNodeViewModel("Локальная Документация");
+        var local = new SkillNodeViewModel("Локальная Документация", Icon.Folder, canAddSkill: _projectId is not null);
         if (_projectId is { } projectId)
         {
             foreach (var name in _skillStore.List(SkillScope.Local, projectId))
-                local.Children.Add(new SkillNodeViewModel(name, isSkill: true, category: "Local", name: name, editable: true));
+                local.Children.Add(new SkillNodeViewModel(name, Icon.DocumentText, isSkill: true, category: "Local", name: name, editable: true));
         }
 
         Roots.Add(local);
@@ -87,8 +123,8 @@ public sealed class SkillsViewModel : ViewModelBase
     {
         var text = Read(node);
 
-        EditSkill.Handle(new SkillEditRequest(node.Title, text, node.Editable)).Subscribe(
-            edited => ApplyEdit(node, text, edited),
+        EditSkill.Handle(new SkillEditRequest(node.Title, text, node.Editable, AskName: false)).Subscribe(
+            result => ApplyEdit(node, text, result?.Text),
             exception => _logger.LogError(exception, "Не удалось открыть скилл «{Name}»", node.Name));
     }
 

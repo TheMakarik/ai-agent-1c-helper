@@ -3,26 +3,89 @@
     x:DataType="vm:SkillsViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ic="using:FluentIcons.Avalonia"
     xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels">
 
     <Grid
         Margin="40,24,52,24"
-        RowDefinitions="Auto,*"
+        RowDefinitions="Auto,Auto,*"
         RowSpacing="12">
         <TextBlock
             Grid.Row="0"
             Classes="page-title"
             Text="База Знаний" />
 
-        <TreeView
+        <StackPanel
             Grid.Row="1"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button Classes="settings-add" Click="OnAddGlobalClick" ToolTip.Tip="Создать общий скилл">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:FluentIcon
+                        Icon="Add"
+                        IconSize="Size16"
+                        IconVariant="Regular" />
+                    <TextBlock VerticalAlignment="Center" Text="Добавить в общие" />
+                </StackPanel>
+            </Button>
+            <Button
+                Classes="settings-add"
+                Click="OnAddLocalClick"
+                IsEnabled="{Binding HasProject}"
+                ToolTip.Tip="Создать скилл текущего проекта">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:FluentIcon
+                        Icon="FolderAdd"
+                        IconSize="Size16"
+                        IconVariant="Regular" />
+                    <TextBlock VerticalAlignment="Center" Text="Добавить в проект" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <TreeView
+            Grid.Row="2"
             ItemsSource="{Binding Roots}"
             SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
             <TreeView.ItemTemplate>
                 <TreeDataTemplate x:DataType="vm:SkillNodeViewModel" ItemsSource="{Binding Children}">
-                    <TextBlock
-                        Margin="0,2"
-                        Text="{Binding Title}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ic:FluentIcon
+                            VerticalAlignment="Center"
+                            Icon="{Binding Icon}"
+                            IconSize="Size16"
+                            IconVariant="Regular" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="{Binding Title}" />
+                        <StackPanel.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem
+                                    Click="OnAddSkillClick"
+                                    Header="Добавить скилл"
+                                    IsVisible="{Binding CanAddSkill}">
+                                    <MenuItem.Icon>
+                                        <ic:FluentIcon
+                                            Icon="DocumentAdd"
+                                            IconSize="Size16"
+                                            IconVariant="Regular" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                    Click="OnDeleteSkillClick"
+                                    Header="Удалить"
+                                    IsEnabled="{Binding Editable}"
+                                    IsVisible="{Binding IsSkill}">
+                                    <MenuItem.Icon>
+                                        <ic:FluentIcon
+                                            Icon="Delete"
+                                            IconSize="Size16"
+                                            IconVariant="Regular" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </StackPanel.ContextMenu>
+                    </StackPanel>
                 </TreeDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>

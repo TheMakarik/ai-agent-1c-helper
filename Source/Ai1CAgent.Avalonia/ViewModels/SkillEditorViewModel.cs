@@ -4,20 +4,28 @@ namespace Ai1CAgent.Avalonia.ViewModels;
 
 public sealed class SkillEditorViewModel : ViewModelBase
 {
+    private string _name;
     private string _text;
 
-    public SkillEditorViewModel(string title, string text, bool editable)
+    public SkillEditorViewModel(SkillEditRequest request)
     {
-        Title = title;
-        _text = text;
-        Editable = editable;
+        _name = request.Name;
+        _text = request.Text;
+        Editable = request.Editable;
+        AskName = request.AskName;
     }
-
-    public string Title { get; }
 
     public bool Editable { get; }
 
+    public bool AskName { get; }
+
     public bool IsReadOnly => !Editable;
+
+    public string Name
+    {
+        get => _name;
+        set => this.RaiseAndSetIfChanged(ref _name, value);
+    }
 
     public string Text
     {

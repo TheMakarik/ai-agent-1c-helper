@@ -1,6 +1,8 @@
 using System;
 using Ai1CAgent.Avalonia.ViewModels;
+using Ai1CAgent.Core.Models;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 
 namespace Ai1CAgent.Avalonia.Views;
 
@@ -25,13 +27,30 @@ public partial class SkillsView : UserControl
                 return;
             }
 
-            var request = context.Input;
             var window = new SkillEditorWindow
             {
-                DataContext = new SkillEditorViewModel(request.Title, request.Text, request.Editable),
+                DataContext = new SkillEditorViewModel(context.Input),
             };
 
-            context.SetOutput(await window.ShowDialog<string?>(owner));
+            context.SetOutput(await window.ShowDialog<SkillEditResult?>(owner));
         });
+    }
+
+    private void OnAddGlobalClick(object? sender, RoutedEventArgs e) =>
+        (DataContext as SkillsViewModel)?.AddSkill(SkillScope.Global);
+
+    private void OnAddLocalClick(object? sender, RoutedEventArgs e) =>
+        (DataContext as SkillsViewModel)?.AddSkill(SkillScope.Local);
+
+    private void OnAddSkillClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem { DataContext: SkillNodeViewModel node } && DataContext is SkillsViewModel viewModel)
+            viewModel.AddSkill(node.Category == "Local" ? SkillScope.Local : SkillScope.Global);
+    }
+
+    private void OnDeleteSkillClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem { DataContext: SkillNodeViewModel node } && DataContext is SkillsViewModel viewModel)
+            viewModel.DeleteSkill(node);
     }
 }
