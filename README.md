@@ -33,8 +33,13 @@
 
 - **.NET 10**, [Avalonia UI](https://avaloniaui.net) 12 (кроссплатформенный десктоп).
 - **ReactiveUI.Avalonia** — MVVM на основе реактивных свойств и команд.
-- **Microsoft.Extensions.AI** — единая абстракция над нейросетями и потоковыми ответами.
-- **Markdown.Avalonia + AvaloniaEdit.TextMate + TextMateSharp** — рендер Markdown и подсветка кода.
+- **Microsoft.Extensions.AI** — единая абстракция над нейросетями, инструментами и потоковыми ответами
+  (OpenAI-совместимые сервисы и Anthropic).
+- **SQLite + Dapper** (`Microsoft.Data.Sqlite`) — локальное хранилище: чаты, сообщения, проекты и индекс файлов.
+- **LibGit2Sharp** — работа с Git: статус, история, diff, коммиты, ветки, cherry-pick, rebase, push/pull и др.
+- **Microsoft.CodeAnalysis.CSharp (Roslyn)** — разбор структуры C#-файлов.
+- **Markdown.Avalonia + AvaloniaEdit.TextMate + TextMateSharp** — рендер Markdown, подсветка кода
+  (включая язык 1С/BSL) и построчный diff.
 - **FluentIcons.Avalonia** — иконки интерфейса.
 - **Serilog** — логирование (настраивается в `appsettings.json`).
 - **xUnit + FakeItEasy + FluentAssertions + AutoFixture** — тесты.
