@@ -70,7 +70,7 @@ public sealed class MainViewModel : ViewModelBase
         [
             new(AppSection.Chat, "Чат"),
             new(AppSection.Projects, "Проекты"),
-            new(AppSection.Documentation, "Документация"),
+            new(AppSection.Documentation, "База Знаний"),
             new(AppSection.Changes, "Изменения"),
             new(AppSection.Settings, "Настройки"),
         ];

@@ -20,6 +20,7 @@ internal static class ToolNameDisplay
         ["file_info"] = "СведенияОФайле",
         ["context_get"] = "ПрочитатьКонтекст",
         ["context_set"] = "ОбновитьКонтекст",
+        ["ReadSystemDocumentation"] = "ПрочитатьСистемнуюДокументацию",
     };
 
     public static string Resolve(string toolName) =>

@@ -66,6 +66,8 @@ public sealed class Bootstrapper
     {
         services.AddSingleton<IConfigurationToolProvider, ConfigurationToolProvider>();
         services.AddSingleton<IConfigurationPathStore, ConfigurationPathStore>();
+        services.AddSingleton<ISystemDocumentation, AvaloniaSystemDocumentation>();
+        services.AddSingleton<ISystemDocumentationToolProvider, SystemDocumentationToolProvider>();
         services.AddSingleton(new Database());
         services.AddSingleton<IChatStore, SqliteChatStore>();
         services.AddSingleton<IProjectStore, SqliteProjectStore>();

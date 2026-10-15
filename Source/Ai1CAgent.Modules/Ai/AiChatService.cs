@@ -13,6 +13,7 @@ public sealed class AiChatService(
     IChatClientFactory chatClientFactory,
     IConfigurationToolProvider configurationToolProvider,
     IProjectContextToolProvider projectContextToolProvider,
+    ISystemDocumentationToolProvider systemDocumentationToolProvider,
     ILogger<AiChatService> logger) : IAiChatService
 {
     public async Task<string> SendAsync(
@@ -71,7 +72,7 @@ public sealed class AiChatService(
 
     private ChatOptions? CreateChatOptions(string? configurationPath, long? projectId)
     {
-        List<AITool> tools = [];
+        List<AITool> tools = [.. systemDocumentationToolProvider.GetTools()];
 
         if (!string.IsNullOrWhiteSpace(configurationPath))
         {
