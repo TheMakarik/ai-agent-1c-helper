@@ -549,7 +549,12 @@ public sealed class MainViewModel : ViewModelBase
                 if (chunk.ToolName is { Length: > 0 } toolName)
                 {
                     answer ??= dialog.AddStreamingMessage();
-                    answer.AddTool(ToolNameDisplay.Resolve(toolName));
+                    var toolText = ToolNameDisplay.Resolve(toolName);
+
+                    if (chunk.ToolDetail is { Length: > 0 } detail)
+                        toolText = $"{toolText} · {detail}";
+
+                    answer.AddTool(toolText);
                 }
 
                 if (chunk.Text.Length > 0 || chunk.Reasoning.Length > 0)

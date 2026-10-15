@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Core.Common;
 using Ai1CAgent.Modules.Ai.Interfaces;
@@ -69,8 +70,8 @@ public sealed class AiChatService(
 
             foreach (var content in update.Contents)
             {
-                if (content is FunctionCallContent { Name: { Length: > 0 } name })
-                    yield return new AiChatChunk(string.Empty, string.Empty, null, name);
+                if (content is FunctionCallContent { Name: { Length: > 0 } name } call)
+                    yield return new AiChatChunk(string.Empty, string.Empty, null, name, BuildToolDetail(call.Arguments));
             }
         }
     }
@@ -112,6 +113,34 @@ public sealed class AiChatService(
 
         return builder?.ToString() ?? string.Empty;
     }
+
+    private static readonly string[] DetailKeys =
+    [
+        "command", "path", "ref", "commit", "query", "name", "message", "pattern", "url",
+    ];
+
+    private static string? BuildToolDetail(IDictionary<string, object?>? arguments)
+    {
+        if (arguments is null || arguments.Count == 0)
+            return null;
+
+        foreach (var key in DetailKeys)
+        {
+            if (arguments.TryGetValue(key, out var value) && FormatValue(value) is { Length: > 0 } text)
+                return text.Length <= 120 ? text : text[..120] + "…";
+        }
+
+        return null;
+    }
+
+    private static string? FormatValue(object? value) => value switch
+    {
+        null => null,
+        string text => text,
+        JsonElement { ValueKind: JsonValueKind.String } element => element.GetString(),
+        JsonElement element => element.GetRawText(),
+        _ => value.ToString(),
+    };
 
     private static AiTokenUsage? ExtractUsage(IEnumerable<AIContent> contents)
     {
