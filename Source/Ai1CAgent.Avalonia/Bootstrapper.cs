@@ -1,9 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Ai1CAgent.Avalonia.ViewModels;
-using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Options;
-using Ai1CAgent.Modules.Greeting;
+using Ai1CAgent.Modules.Ai;
+using Ai1CAgent.Modules.Ai.Interfaces;
+using Ai1CAgent.Modules.Mcp;
+using Ai1CAgent.Modules.Mcp.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -45,13 +47,28 @@ public sealed class Bootstrapper
     private static void RegisterOptions(HostApplicationBuilder builder)
     {
         builder.Services
-            .AddOptions<GreetingOptions>()
-            .Bind(builder.Configuration.GetSection(nameof(GreetingOptions)));
+            .AddOptions<OllamaOptions>()
+            .Bind(builder.Configuration.GetSection(nameof(OllamaOptions)));
+
+        builder.Services
+            .AddOptions<DeepSeekOptions>()
+            .Bind(builder.Configuration.GetSection(nameof(DeepSeekOptions)));
+
+        builder.Services
+            .AddOptions<ClaudeOptions>()
+            .Bind(builder.Configuration.GetSection(nameof(ClaudeOptions)));
+
+        builder.Services
+            .AddOptions<McpOptions>()
+            .Bind(builder.Configuration.GetSection(nameof(McpOptions)));
     }
 
     private static void RegisterServices(IServiceCollection services)
     {
-        services.AddSingleton<IGreetingProvider, GreetingProvider>();
+        services.AddSingleton<IMcpToolProvider, McpToolProvider>();
+        services.AddSingleton<IChatClientFactory, ChatClientFactory>();
+        services.AddSingleton<IAiModelCatalog, AiModelCatalog>();
+        services.AddSingleton<IAiChatService, AiChatService>();
         services.AddSingleton<MainViewModel>();
     }
 }
