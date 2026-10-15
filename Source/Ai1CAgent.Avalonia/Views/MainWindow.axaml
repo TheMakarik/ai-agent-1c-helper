@@ -243,7 +243,7 @@
                     Grid.Row="4"
                     Margin="8,0,0,0"
                     HorizontalAlignment="Left"
-                    Classes="project-folder"
+                    Classes="compress"
                     Command="{Binding CompressCommand}"
                     IsVisible="{Binding SelectedDialog.CanCompress}"
                     ToolTip.Tip="Сжать контекст диалога: убрать воду и суммаризировать историю">
