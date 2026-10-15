@@ -4,10 +4,17 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>full</TrimMode>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+        <!-- Serilog.Settings.Configuration несовместим с trimming (типы/sinks по строкам из appsettings.json),
+             поэтому сборки Serilog исключены из тримминга через TrimmerRootAssembly ниже. -->
+        <NoWarn>$(NoWarn);IL2104</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Models\" />
         <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
 
@@ -27,6 +34,13 @@
         <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
         <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TrimmerRootAssembly Include="Serilog" />
+        <TrimmerRootAssembly Include="Serilog.Extensions.Logging" />
+        <TrimmerRootAssembly Include="Serilog.Settings.Configuration" />
+        <TrimmerRootAssembly Include="Serilog.Sinks.Console" />
     </ItemGroup>
 
     <ItemGroup>

@@ -20,4 +20,5 @@
 - `Skills/options/SKILL.md` — настройка `IOptions` из `appsettings.json`.
 - `Skills/paths/SKILL.md` — всегда `Path.Join` вместо `Path.Combine` (во всех слоях).
 - `Skills/testing/SKILL.md` — тесты на xUnit, FakeItEasy, FluentAssertions, AutoFixture.
+- `Skills/trimming/SKILL.md` — full trimming/AOT: запрет рефлексии без аннотаций, source generators, IL2xxx/IL3xxx как ошибки.
 - `Skills/xaml/SKILL.md` — разработка XAML/AXAML в Avalonia.
