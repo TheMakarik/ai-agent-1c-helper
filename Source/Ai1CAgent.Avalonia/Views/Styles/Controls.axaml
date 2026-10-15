@@ -1,7 +1,6 @@
 <Styles
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ic="using:FluentIcons.Avalonia">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--  Заголовок боковой панели  -->
     <Style Selector="TextBlock.sidebar-header">
@@ -164,55 +163,156 @@
         <Setter Property="BorderThickness" Value="0" />
     </Style>
 
-    <!--  Кнопка выбора нейросети: имя модели + переворачивающийся шеврон  -->
-    <Style Selector="Button.model-picker">
-        <Setter Property="Height" Value="32" />
-        <Setter Property="Padding" Value="10,0" />
-        <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
+    <!--  Раздел настроек  -->
+    <Style Selector="TextBlock.page-title">
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
     </Style>
 
-    <Style Selector="Button.model-picker ic|FluentIcon">
-        <Setter Property="RenderTransform" Value="rotate(0deg)" />
+    <Style Selector="TextBlock.page-subtitle">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+    </Style>
+
+    <Style Selector="Border.settings-card">
+        <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style Selector="TextBlock.settings-provider">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="TextBox.settings">
+        <Setter Property="Background" Value="{StaticResource ContentBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="10,6" />
+    </Style>
+
+    <Style Selector="Button.settings-save">
+        <Setter Property="Background" Value="{StaticResource SidebarBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="20,8" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Transitions">
             <Transitions>
-                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
             </Transitions>
         </Setter>
     </Style>
 
-    <Style Selector="Button.model-picker:flyout-open ic|FluentIcon">
-        <Setter Property="RenderTransform" Value="rotate(180deg)" />
-    </Style>
-
-    <!--  Список нейросетей внутри выпадающего меню  -->
-    <Style Selector="ListBox.models">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
-    </Style>
-
-    <Style Selector="ListBox.models ListBoxItem">
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Padding" Value="8,6" />
-    </Style>
-
-    <Style Selector="ListBox.models ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-    </Style>
-
-    <Style Selector="ListBox.models ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Button.settings-save:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
     </Style>
 
-    <Style Selector="ListBox.models ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.models ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter, ListBox.models ListBoxItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Button.settings-save:pressed /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="ToggleButton.settings-reveal">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <Style Selector="ToggleButton.settings-reveal:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!--  Секции внутри карточки настроек  -->
+    <Style Selector="TextBlock.settings-label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.settings-endpoint">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Padding" Value="2,0" />
+    </Style>
+
+    <Style Selector="TextBlock.model-format">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+    </Style>
+
+    <Style Selector="Border.settings-models">
+        <Setter Property="Background" Value="{StaticResource ContentBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="MinHeight" Value="40" />
+    </Style>
+
+    <Style Selector="Button.settings-add">
+        <Setter Property="Background" Value="{StaticResource SidebarBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="Button.settings-add:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="Button.settings-add:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!--  Кнопка диалога подтверждения  -->
+    <Style Selector="Button.dialog-action">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="14,8" />
+    </Style>
+
+    <Style Selector="Button.dialog-action:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="Button.dialog-action:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!--  Выпадающие списки настроек и выбора нейросети  -->
+    <Style Selector="ComboBox.settings">
+        <Setter Property="Background" Value="{StaticResource ContentBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="MaxDropDownHeight" Value="240" />
+    </Style>
+
+    <Style Selector="ComboBox.model-select">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="MaxDropDownHeight" Value="260" />
     </Style>
 
 </Styles>

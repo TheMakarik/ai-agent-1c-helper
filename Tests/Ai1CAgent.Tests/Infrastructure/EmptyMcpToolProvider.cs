@@ -11,6 +11,8 @@ public static class EmptyMcpToolProvider
         var provider = A.Fake<IMcpToolProvider>();
         A.CallTo(() => provider.GetToolsAsync(A<CancellationToken>._))
             .Returns(Task.FromResult<IReadOnlyList<AITool>>([]));
+        A.CallTo(() => provider.CheckAsync(A<CancellationToken>._))
+            .Returns(Task.FromResult(true));
         return provider;
     }
 }

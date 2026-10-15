@@ -1,0 +1,391 @@
+<UserControl
+    x:Class="Ai1CAgent.Avalonia.Views.SettingsView"
+    x:DataType="vm:SettingsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Ai1CAgent.Avalonia.Views.Converters"
+    xmlns:ic="using:FluentIcons.Avalonia"
+    xmlns:models="using:Ai1CAgent.Core.Models"
+    xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels">
+
+    <UserControl.Styles>
+        <Style Selector="TextBox.model-name">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="TextBox.model-name:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource ContentBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{StaticResource SidebarSelectedBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid
+        Margin="40,24,52,16"
+        RowDefinitions="Auto,*,Auto"
+        RowSpacing="16">
+
+        <StackPanel Grid.Row="0" Spacing="4">
+            <TextBlock Classes="page-title" Text="Настройки нейросетей" />
+            <TextBlock
+                Classes="page-subtitle"
+                Text="Выберите провайдера, настройте активную модель, адрес API и ключ. Ключи хранятся в зашифрованном виде." />
+        </StackPanel>
+
+        <ScrollViewer
+            Grid.Row="1"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="12">
+
+                <Border Classes="settings-card">
+                    <Grid ColumnDefinitions="190,*" ColumnSpacing="16">
+                        <TextBlock
+                            Grid.Column="0"
+                            Classes="settings-label"
+                            Text="Провайдер"
+                            VerticalAlignment="Center" />
+                        <Grid
+                            Grid.Column="1"
+                            ColumnDefinitions="*,Auto"
+                            ColumnSpacing="8">
+                            <ComboBox
+                                Grid.Column="0"
+                                Classes="settings"
+                                ItemsSource="{Binding Providers}"
+                                MaxDropDownHeight="260"
+                                SelectedItem="{Binding SelectedProvider, Mode=TwoWay}"
+                                ToolTip.Tip="Выберите провайдера нейросети">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ProviderSettingsViewModel">
+                                        <TextBlock
+                                            Text="{Binding DisplayName}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button
+                                Grid.Column="1"
+                                Classes="icon-button"
+                                Command="{Binding RemoveProviderCommand}"
+                                IsEnabled="{Binding SelectedProvider.IsCustom}"
+                                ToolTip.Tip="Удалить провайдер"
+                                VerticalAlignment="Center">
+                                <ic:FluentIcon
+                                    Icon="Delete"
+                                    IconSize="Size16"
+                                    IconVariant="Regular" />
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border Classes="settings-card">
+                    <Grid ColumnDefinitions="190,*" ColumnSpacing="16">
+                        <TextBlock
+                            Grid.Column="0"
+                            Classes="settings-label"
+                            Text="Новый провайдер"
+                            VerticalAlignment="Center" />
+                        <Grid
+                            Grid.Column="1"
+                            ColumnDefinitions="*,170,Auto"
+                            ColumnSpacing="8">
+                            <TextBox
+                                Grid.Column="0"
+                                Classes="settings"
+                                PlaceholderText="Название"
+                                Text="{Binding NewProviderName, Mode=TwoWay}"
+                                ToolTip.Tip="Название нового провайдера"
+                                VerticalAlignment="Center" />
+                            <ComboBox
+                                Grid.Column="1"
+                                Classes="settings"
+                                ItemsSource="{Binding Formats}"
+                                MaxDropDownHeight="200"
+                                SelectedItem="{Binding NewProviderFormat, Mode=TwoWay}"
+                                ToolTip.Tip="Формат API нового провайдера"
+                                VerticalAlignment="Center">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:AiApiFormat">
+                                        <TextBlock Text="{Binding Converter={converters:AiApiFormatToNameConverter}}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button
+                                Grid.Column="2"
+                                Classes="settings-add"
+                                Command="{Binding AddProviderCommand}"
+                                ToolTip.Tip="Добавить провайдера"
+                                VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ic:FluentIcon
+                                        Icon="Add"
+                                        IconSize="Size16"
+                                        IconVariant="Regular" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="Добавить" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border
+                    Classes="settings-card"
+                    IsVisible="{Binding HasSelectedProvider}">
+                    <ContentControl Content="{Binding SelectedProvider}">
+                        <ContentControl.ContentTemplate>
+                            <DataTemplate x:DataType="vm:ProviderSettingsViewModel">
+                                <Grid ColumnDefinitions="190,*" ColumnSpacing="16">
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        Classes="settings-provider"
+                                        Text="{Binding DisplayName}"
+                                        VerticalAlignment="Top" />
+
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Spacing="14">
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Classes="settings-label" Text="Совместимость" />
+                                            <ComboBox
+                                                Classes="settings"
+                                                HorizontalAlignment="Left"
+                                                IsEnabled="{Binding IsCustom}"
+                                                ItemsSource="{Binding Formats}"
+                                                MaxDropDownHeight="200"
+                                                MinWidth="200"
+                                                SelectedItem="{Binding ProviderFormat, Mode=TwoWay}"
+                                                ToolTip.Tip="Формат API провайдера (доступно для пользовательских провайдеров)">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:AiApiFormat">
+                                                        <TextBlock Text="{Binding Converter={converters:AiApiFormatToNameConverter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Classes="settings-label" Text="Активная модель" />
+                                            <ComboBox
+                                                Classes="settings"
+                                                HorizontalAlignment="Left"
+                                                ItemsSource="{Binding Models}"
+                                                MaxDropDownHeight="260"
+                                                MinWidth="280"
+                                                SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
+                                                ToolTip.Tip="Активная модель по умолчанию">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:ModelOptionViewModel">
+                                                        <TextBlock
+                                                            Text="{Binding Name}"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Classes="settings-label" Text="Модели" />
+                                            <Border Classes="settings-models">
+                                                <ScrollViewer
+                                                    MaxHeight="160"
+                                                    VerticalScrollBarVisibility="Auto"
+                                                    ToolTip.Tip="Список доступных моделей">
+                                                    <ItemsControl ItemsSource="{Binding Models}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:ModelOptionViewModel">
+                                                                <Grid
+                                                                    Margin="0,2"
+                                                                    ColumnDefinitions="*,170,Auto"
+                                                                    ColumnSpacing="8">
+                                                                    <TextBox
+                                                                        Grid.Column="0"
+                                                                        Classes="model-name"
+                                                                        Text="{Binding Name, Mode=TwoWay}"
+                                                                        ToolTip.Tip="Название модели"
+                                                                        VerticalAlignment="Center" />
+                                                                    <ComboBox
+                                                                        Grid.Column="1"
+                                                                        Classes="settings"
+                                                                        IsEnabled="{Binding CanChangeFormat}"
+                                                                        ItemsSource="{Binding Formats}"
+                                                                        MaxDropDownHeight="160"
+                                                                        SelectedItem="{Binding Format, Mode=TwoWay}"
+                                                                        ToolTip.Tip="Совместимость"
+                                                                        VerticalAlignment="Center">
+                                                                        <ComboBox.ItemTemplate>
+                                                                            <DataTemplate x:DataType="models:AiApiFormat">
+                                                                                <TextBlock Text="{Binding Converter={converters:AiApiFormatToNameConverter}}" />
+                                                                            </DataTemplate>
+                                                                        </ComboBox.ItemTemplate>
+                                                                    </ComboBox>
+                                                                    <Button
+                                                                        Grid.Column="2"
+                                                                        Classes="icon-button"
+                                                                        Command="{Binding RemoveCommand}"
+                                                                        IsVisible="{Binding IsUserAdded}"
+                                                                        ToolTip.Tip="Удалить модель"
+                                                                        VerticalAlignment="Center">
+                                                                        <ic:FluentIcon
+                                                                            Icon="Delete"
+                                                                            IconSize="Size16"
+                                                                            IconVariant="Regular" />
+                                                                    </Button>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Border>
+                                            <Grid ColumnDefinitions="*,170,Auto" ColumnSpacing="8">
+                                                <TextBox
+                                                    Grid.Column="0"
+                                                    Classes="settings"
+                                                    PlaceholderText="Название модели"
+                                                    Text="{Binding NewModelName, Mode=TwoWay}"
+                                                    ToolTip.Tip="Название новой модели"
+                                                    VerticalAlignment="Center" />
+                                                <ComboBox
+                                                    Grid.Column="1"
+                                                    Classes="settings"
+                                                    ItemsSource="{Binding Formats}"
+                                                    MaxDropDownHeight="160"
+                                                    SelectedItem="{Binding NewModelFormat, Mode=TwoWay}"
+                                                    ToolTip.Tip="Формат API новой модели"
+                                                    VerticalAlignment="Center">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:AiApiFormat">
+                                                            <TextBlock Text="{Binding Converter={converters:AiApiFormatToNameConverter}}" />
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <Button
+                                                    Grid.Column="2"
+                                                    Classes="settings-add"
+                                                    Command="{Binding AddModelCommand}"
+                                                    ToolTip.Tip="Добавить модель"
+                                                    VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <ic:FluentIcon
+                                                            Icon="Add"
+                                                            IconSize="Size16"
+                                                            IconVariant="Regular" />
+                                                        <TextBlock
+                                                            VerticalAlignment="Center"
+                                                            Text="Добавить" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Classes="settings-label" Text="Адрес API" />
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                                                <Panel Grid.Column="0">
+                                                    <TextBlock
+                                                        Classes="settings-endpoint"
+                                                        IsVisible="{Binding IsEndpointDisplayMode}"
+                                                        Text="{Binding Endpoint}"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        ToolTip.Tip="{Binding Endpoint}"
+                                                        VerticalAlignment="Center" />
+                                                    <TextBox
+                                                        Classes="settings"
+                                                        IsVisible="{Binding IsEditingEndpoint}"
+                                                        PlaceholderText="{Binding EndpointPlaceholder}"
+                                                        Text="{Binding Endpoint, Mode=TwoWay}"
+                                                        ToolTip.Tip="Enter — применить адрес"
+                                                        VerticalAlignment="Center">
+                                                        <TextBox.KeyBindings>
+                                                            <KeyBinding
+                                                                Command="{Binding ConfirmEndpointCommand}"
+                                                                Gesture="Enter" />
+                                                        </TextBox.KeyBindings>
+                                                    </TextBox>
+                                                </Panel>
+                                                <Button
+                                                    Grid.Column="1"
+                                                    Classes="icon-button"
+                                                    Command="{Binding EndpointCommand}"
+                                                    ToolTip.Tip="{Binding EndpointActionTooltip}"
+                                                    VerticalAlignment="Center">
+                                                    <Panel>
+                                                        <ic:FluentIcon
+                                                            Icon="Edit"
+                                                            IconSize="Size16"
+                                                            IconVariant="Regular"
+                                                            IsVisible="{Binding IsEndpointDisplayMode}" />
+                                                        <ic:FluentIcon
+                                                            Icon="Delete"
+                                                            IconSize="Size16"
+                                                            IconVariant="Regular"
+                                                            IsVisible="{Binding IsEditingEndpoint}" />
+                                                    </Panel>
+                                                </Button>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Classes="settings-label" Text="API-ключ" />
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                <TextBox
+                                                    Grid.Column="0"
+                                                    Classes="settings"
+                                                    PasswordChar="{Binding ApiKeyChar}"
+                                                    PlaceholderText="{Binding ApiKeyHint}"
+                                                    Text="{Binding ApiKey, Mode=TwoWay}"
+                                                    ToolTip.Tip="API-ключ провайдера, хранится в зашифрованном виде" />
+                                                <ToggleButton
+                                                    Grid.Column="1"
+                                                    Classes="settings-reveal"
+                                                    Content="Показать"
+                                                    IsChecked="{Binding RevealApiKey}"
+                                                    ToolTip.Tip="Показать или скрыть API-ключ"
+                                                    VerticalAlignment="Center" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel
+            Grid.Row="2"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="12">
+            <TextBlock
+                VerticalAlignment="Center"
+                Foreground="{StaticResource MutedTextBrush}"
+                Text="{Binding StatusMessage}" />
+            <Button
+                Classes="settings-save"
+                Command="{Binding SaveCommand}"
+                ToolTip.Tip="Сохранить настройки нейросетей">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ic:FluentIcon
+                        Icon="Save"
+                        IconSize="Size20"
+                        IconVariant="Regular" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="Сохранить" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+
+</UserControl>

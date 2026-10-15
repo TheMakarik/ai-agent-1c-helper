@@ -15,5 +15,7 @@
     <SolidColorBrush x:Key="TextBrush" Color="#1F1F1F" />
     <SolidColorBrush x:Key="MutedTextBrush" Color="#6E6E6E" />
     <SolidColorBrush x:Key="LogoBrush" Color="#D91920" />
+    <SolidColorBrush x:Key="ErrorBrush" Color="#C62828" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#2E7D32" />
 
 </ResourceDictionary>

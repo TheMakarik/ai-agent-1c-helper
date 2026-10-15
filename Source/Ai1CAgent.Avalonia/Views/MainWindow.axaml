@@ -7,6 +7,7 @@
     xmlns:ic="using:FluentIcons.Avalonia"
     xmlns:models="using:Ai1CAgent.Core.Models"
     xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels"
+    xmlns:views="using:Ai1CAgent.Avalonia.Views"
     Width="1040"
     Height="720"
     MinWidth="820"
@@ -14,7 +15,149 @@
     Background="{StaticResource ContentBrush}"
     Foreground="{StaticResource TextBrush}"
     Icon="/Assets/avalonia-logo.ico"
-    Title="Ai1CAgent">
+    Title="{Binding Title}">
+
+    <Window.Styles>
+
+        <!--  Кнопка выбора ИИ в чате  -->
+        <Style Selector="ToggleButton.model-picker">
+            <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+
+        <Style Selector="ToggleButton.model-picker:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+        </Style>
+
+        <Style Selector="ToggleButton.model-picker:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+        </Style>
+
+        <Style Selector="TextBlock.model-picker-provider">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="TextBlock.model-picker-model">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <!--  Меню выбора: провайдеры слева, модели справа  -->
+        <Style Selector="Border.model-picker-menu">
+            <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="4" />
+        </Style>
+
+        <Style Selector="ListBox.model-picker-providers">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="ListBox.model-picker-providers ListBoxItem">
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        </Style>
+
+        <Style Selector="ListBox.model-picker-providers ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+        </Style>
+
+        <Style Selector="ListBox.model-picker-providers ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.model-picker-providers ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        </Style>
+
+        <Style Selector="Button.model-picker-item">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
+
+        <Style Selector="Button.model-picker-item:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+        </Style>
+
+        <Style Selector="Button.model-picker-item:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        </Style>
+
+        <Style Selector="TextBlock.model-picker-empty">
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
+
+        <!--  Индикатор подключения к 1С MCP  -->
+        <Style Selector="Button.status-mcp">
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{StaticResource SidebarHeaderBrush}" />
+        </Style>
+
+        <Style Selector="Button.status-mcp.ok">
+            <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+        </Style>
+
+        <Style Selector="Button.status-mcp.fail">
+            <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
+        </Style>
+
+        <Style Selector="Button.status-mcp /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.status-mcp.ok /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+        </Style>
+
+        <Style Selector="Button.status-mcp.fail /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
+        </Style>
+
+        <Style Selector="Button.status-mcp:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SidebarHeaderBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.status-mcp.ok:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.status-mcp.fail:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.status-mcp:pointerover">
+            <Setter Property="Opacity" Value="0.88" />
+        </Style>
+
+        <Style Selector="Button.status-mcp:pressed">
+            <Setter Property="Opacity" Value="0.75" />
+        </Style>
+
+    </Window.Styles>
 
     <Grid ColumnDefinitions="206,*">
 
@@ -44,7 +187,8 @@
                 <Button
                     Grid.Row="2"
                     Classes="sidebar-button"
-                    Command="{Binding NewDialogCommand}">
+                    Command="{Binding NewDialogCommand}"
+                    ToolTip.Tip="Начать новый диалог">
                     <StackPanel
                         Orientation="Horizontal"
                         Spacing="8">
@@ -61,7 +205,8 @@
                     Grid.Row="3"
                     Classes="dialogs"
                     ItemsSource="{Binding Dialogs}"
-                    SelectedItem="{Binding SelectedDialog}">
+                    SelectedItem="{Binding SelectedDialog}"
+                    ToolTip.Tip="История диалогов">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:ChatDialogViewModel">
                             <TextBlock
@@ -75,39 +220,43 @@
 
         <Grid
             Grid.Column="1"
-            RowDefinitions="Auto,*">
+            RowDefinitions="Auto,*,Auto">
 
             <!--  Верхнее меню разделов  -->
             <Border
                 Grid.Row="0"
                 Height="56"
                 Background="{StaticResource TopBarBrush}">
-                <ListBox
-                    Classes="nav"
-                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                    ItemsSource="{Binding Sections}"
-                    SelectedItem="{Binding SelectedSection}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Rows="1" />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:NavigationItemViewModel">
-                            <StackPanel
-                                Orientation="Horizontal"
-                                Spacing="8">
-                                <ic:FluentIcon
-                                    Icon="{Binding Section, Converter={converters:AppSectionToIconConverter}}"
-                                    IconSize="Size24"
-                                    IconVariant="Regular" />
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    Text="{Binding Title}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <Grid ColumnDefinitions="*">
+                    <ListBox
+                        Grid.Column="0"
+                        Classes="nav"
+                        ItemsSource="{Binding Sections}"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        SelectedItem="{Binding SelectedSection}"
+                        ToolTip.Tip="Разделы приложения">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                                <StackPanel
+                                    Orientation="Horizontal"
+                                    Spacing="8">
+                                    <ic:FluentIcon
+                                        Icon="{Binding Section, Converter={converters:AppSectionToIconConverter}}"
+                                        IconSize="Size24"
+                                        IconVariant="Regular" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Title}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
             </Border>
 
             <!--  Чат  -->
@@ -155,58 +304,33 @@
                     Grid.Row="1"
                     Margin="40,0,52,16"
                     Classes="input">
-                    <Grid ColumnDefinitions="*,Auto,Auto">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
                         <TextBox
                             Grid.Column="0"
                             Classes="prompt"
                             PlaceholderText="Напишите сообщение…"
                             Text="{Binding Prompt}"
-                            TextWrapping="Wrap">
+                            TextWrapping="Wrap"
+                            ToolTip.Tip="Введите сообщение, Enter — отправить">
                             <TextBox.KeyBindings>
                                 <KeyBinding
                                     Command="{Binding SendCommand}"
                                     Gesture="Enter" />
                             </TextBox.KeyBindings>
                         </TextBox>
-                        <Button
-                            x:Name="ModelButton"
+                        <ToggleButton
+                            x:Name="ModelPickerButton"
                             Grid.Column="1"
+                            MinWidth="180"
                             VerticalAlignment="Center"
                             Classes="model-picker"
+                            IsChecked="{Binding IsModelPickerOpen, Mode=TwoWay}"
                             ToolTip.Tip="Выбрать нейросеть">
-                            <StackPanel
-                                Orientation="Horizontal"
-                                Spacing="6">
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    Text="{Binding SelectedModel.Name, FallbackValue=Нейросеть}" />
-                                <ic:FluentIcon
-                                    VerticalAlignment="Center"
-                                    Icon="ChevronDown"
-                                    IconSize="Size16"
-                                    IconVariant="Regular" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding SelectedChatProvider.DisplayName}" Classes="model-picker-provider" />
+                                <TextBlock Text="{Binding SelectedChatModel.Name}" Classes="model-picker-model" />
                             </StackPanel>
-                            <Button.Flyout>
-                                <Flyout Placement="Top">
-                                    <ListBox
-                                        x:Name="ModelList"
-                                        MinWidth="220"
-                                        Classes="models"
-                                        ItemsSource="{Binding Models}"
-                                        SelectedItem="{Binding SelectedModel}">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate x:DataType="models:AiModel">
-                                                <TextBlock>
-                                                    <Run Text="{Binding Provider}" />
-                                                    <Run Text=": " />
-                                                    <Run Text="{Binding Name}" />
-                                                </TextBlock>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
-                                </Flyout>
-                            </Button.Flyout>
-                        </Button>
+                        </ToggleButton>
                         <Button
                             Grid.Column="2"
                             VerticalAlignment="Center"
@@ -222,12 +346,17 @@
                 </Border>
             </Grid>
 
+            <!--  Настройки нейросетей  -->
+            <Panel Grid.Row="1" IsVisible="{Binding IsSettingsSelected}">
+                <views:SettingsView DataContext="{Binding Settings}" />
+            </Panel>
+
             <!--  Заглушка для остальных разделов  -->
             <StackPanel
                 Grid.Row="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                IsVisible="{Binding !IsChatSelected}"
+                IsVisible="{Binding IsPlaceholderSelected}"
                 Spacing="12">
                 <ic:FluentIcon
                     HorizontalAlignment="Center"
@@ -242,7 +371,208 @@
                     <Run Text=" — раздел в разработке" />
                 </TextBlock>
             </StackPanel>
+
+            <!--  Статусная строка: подключение к 1С MCP  -->
+            <Border
+                Grid.Row="2"
+                Height="36"
+                Padding="16,0"
+                Background="{StaticResource SidebarBrush}"
+                BorderBrush="{StaticResource BorderLineBrush}"
+                BorderThickness="0,1,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Button
+                        Grid.Column="1"
+                        Classes="status-mcp"
+                        Classes.checking="{Binding IsMcpChecking}"
+                        Classes.ok="{Binding IsMcpAvailable}"
+                        Classes.fail="{Binding IsMcpUnavailable}"
+                        Command="{Binding CheckMcpCommand}"
+                        ToolTip.Tip="{Binding McpStatusTooltip}">
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="6">
+                            <ic:FluentIcon
+                                Icon="Server"
+                                IconSize="Size16"
+                                IconVariant="Regular" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="1C MCP" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
         </Grid>
+
+        <!--  Меню выбора ИИ: провайдеры + модели  -->
+        <Popup
+            Grid.Column="1"
+            IsLightDismissEnabled="True"
+            IsOpen="{Binding IsModelPickerOpen, Mode=TwoWay}"
+            MaxHeight="320"
+            Placement="Top"
+            PlacementTarget="{Binding #ModelPickerButton}">
+            <Border Classes="model-picker-menu">
+                <Grid ColumnDefinitions="Auto,*" MaxHeight="300">
+                    <ListBox
+                        MinWidth="150"
+                        Classes="model-picker-providers"
+                        ItemsSource="{Binding ChatProviders}"
+                        SelectedItem="{Binding SelectedChatProvider}"
+                        ToolTip.Tip="Провайдер нейросети">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ProviderPickerViewModel">
+                                <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <ScrollViewer Grid.Column="1" MinWidth="180">
+                        <ItemsControl ItemsSource="{Binding SelectedChatProvider.Models}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:AiModel">
+                                    <Button
+                                        Classes="model-picker-item"
+                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).SelectChatModelCommand}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="{Binding Name}">
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <!--  Подтверждение несохранённых изменений  -->
+        <Border
+            Grid.ColumnSpan="2"
+            Background="#99000000"
+            IsVisible="{Binding IsConfirmSaveOpen}"
+            ZIndex="100">
+            <Border
+                Width="440"
+                Classes="settings-card"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+                    <TextBlock Classes="page-title" Text="Несохранённые изменения" />
+                    <TextBlock
+                        Classes="page-subtitle"
+                        Text="Настройки были изменены. Сохранить их перед переходом в другой раздел?"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Classes="page-subtitle"
+                        Foreground="{StaticResource ErrorBrush}"
+                        IsVisible="{Binding ConfirmSaveError, Converter={converters:StringNotEmptyToBoolConverter}}"
+                        Text="{Binding ConfirmSaveError}"
+                        TextWrapping="Wrap" />
+                    <StackPanel
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button Classes="settings-save" Click="OnConfirmSaveClick" ToolTip.Tip="Сохранить изменения и продолжить">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="6">
+                                <ic:FluentIcon
+                                    Icon="Save"
+                                    IconSize="Size16"
+                                    IconVariant="Regular" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="Сохранить" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="dialog-action" Click="OnConfirmDiscardClick" ToolTip.Tip="Не сохранять изменения и продолжить">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="6">
+                                <ic:FluentIcon
+                                    Icon="Delete"
+                                    IconSize="Size16"
+                                    IconVariant="Regular" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="Не сохранять" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="dialog-action" Click="OnConfirmCancelClick" ToolTip.Tip="Отменить переход и остаться в настройках">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="6">
+                                <ic:FluentIcon
+                                    Icon="Dismiss"
+                                    IconSize="Size16"
+                                    IconVariant="Regular" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="Отмена" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!--  Нет подключения к 1С MCP  -->
+        <Border
+            Grid.ColumnSpan="2"
+            Background="#99000000"
+            IsVisible="{Binding IsMcpWarningOpen}"
+            ZIndex="110">
+            <Border
+                Width="460"
+                Classes="settings-card"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+                    <TextBlock Classes="page-title" Text="Нет подключения к 1С MCP" />
+                    <TextBlock
+                        Classes="page-subtitle"
+                        Text="Не удалось подключиться к серверу 1С MCP. Агент сможет отвечать на вопросы, но не сможет работать с 1С. Хотите продолжить?"
+                        TextWrapping="Wrap" />
+                    <StackPanel
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button Classes="settings-save" Click="OnMcpContinueClick">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="6">
+                                <ic:FluentIcon
+                                    Icon="Checkmark"
+                                    IconSize="Size16"
+                                    IconVariant="Regular" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="Продолжить" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="dialog-action" Click="OnMcpCancelClick">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="6">
+                                <ic:FluentIcon
+                                    Icon="Dismiss"
+                                    IconSize="Size16"
+                                    IconVariant="Regular" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="Отмена" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 
 </Window>

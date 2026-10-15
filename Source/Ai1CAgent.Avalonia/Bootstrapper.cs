@@ -51,12 +51,8 @@ public sealed class Bootstrapper
             .Bind(builder.Configuration.GetSection(nameof(OllamaOptions)));
 
         builder.Services
-            .AddOptions<DeepSeekOptions>()
-            .Bind(builder.Configuration.GetSection(nameof(DeepSeekOptions)));
-
-        builder.Services
-            .AddOptions<ClaudeOptions>()
-            .Bind(builder.Configuration.GetSection(nameof(ClaudeOptions)));
+            .AddOptions<AiOptions>()
+            .Bind(builder.Configuration.GetSection(nameof(AiOptions)));
 
         builder.Services
             .AddOptions<McpOptions>()
@@ -66,9 +62,12 @@ public sealed class Bootstrapper
     private static void RegisterServices(IServiceCollection services)
     {
         services.AddSingleton<IMcpToolProvider, McpToolProvider>();
+        services.AddSingleton<ISecretProtector, AesGcmSecretProtector>();
+        services.AddSingleton<IAiSettingsStore, AiSettingsStore>();
         services.AddSingleton<IChatClientFactory, ChatClientFactory>();
         services.AddSingleton<IAiModelCatalog, AiModelCatalog>();
         services.AddSingleton<IAiChatService, AiChatService>();
+        services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<MainViewModel>();
     }
 }

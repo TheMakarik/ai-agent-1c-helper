@@ -1,5 +1,6 @@
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai;
+using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Mcp.Interfaces;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
@@ -11,14 +12,14 @@ public static class ChatServiceBuilder
 {
     public static (AiChatService Service, ChatClientFactory Factory) Build(
         OllamaOptions? ollamaOptions = null,
-        DeepSeekOptions? deepSeekOptions = null,
-        ClaudeOptions? claudeOptions = null,
-        IMcpToolProvider? mcpToolProvider = null)
+        AiOptions? aiOptions = null,
+        IMcpToolProvider? mcpToolProvider = null,
+        IAiSettingsStore? settingsStore = null)
     {
         var factory = new ChatClientFactory(
             FakeOptions.Create(ollamaOptions ?? new OllamaOptions()),
-            FakeOptions.Create(deepSeekOptions ?? new DeepSeekOptions()),
-            FakeOptions.Create(claudeOptions ?? new ClaudeOptions()),
+            FakeOptions.Create(aiOptions ?? new AiOptions()),
+            settingsStore ?? CreateEmptySettingsStore(),
             NullLoggerFactory.Instance,
             A.Dummy<ILogger<ChatClientFactory>>());
 
@@ -28,5 +29,12 @@ public static class ChatServiceBuilder
             A.Dummy<ILogger<AiChatService>>());
 
         return (service, factory);
+    }
+
+    private static IAiSettingsStore CreateEmptySettingsStore()
+    {
+        var settingsStore = A.Fake<IAiSettingsStore>();
+        A.CallTo(() => settingsStore.GetProviders()).Returns([]);
+        return settingsStore;
     }
 }

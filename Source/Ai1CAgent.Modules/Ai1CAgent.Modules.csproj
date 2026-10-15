@@ -17,6 +17,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Ai1CAgent.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Ai1CAgent.Core\Ai1CAgent.Core.csproj" />
     </ItemGroup>
 </Project>

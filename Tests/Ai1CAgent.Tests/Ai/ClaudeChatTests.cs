@@ -1,5 +1,4 @@
 using Ai1CAgent.Core.Models;
-using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Tests.Infrastructure;
 using FluentAssertions;
@@ -17,7 +16,7 @@ public sealed class ClaudeChatTests : IDisposable
 
     public ClaudeChatTests()
     {
-        (_systemUnderTests, _factory) = ChatServiceBuilder.Build(claudeOptions: new ClaudeOptions { ApiKeyEnvironmentVariable = ApiKeyVariable });
+        (_systemUnderTests, _factory) = ChatServiceBuilder.Build();
     }
 
     [SkippableFact]

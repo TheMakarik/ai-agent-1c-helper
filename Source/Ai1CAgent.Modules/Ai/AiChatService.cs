@@ -20,7 +20,7 @@ public sealed class AiChatService(
         ArgumentNullException.ThrowIfNull(model);
         ArgumentNullException.ThrowIfNull(messages);
 
-        logger.LogInformation("Запрос к {Provider}/{Model}, сообщений: {Count}", model.Provider, model.Name, messages.Count);
+        logger.LogInformation("Запрос к {Provider}/{Model}, сообщений: {Count}", model.ProviderKey, model.Name, messages.Count);
 
         var client = chatClientFactory.GetClient(model);
         var chatOptions = await CreateChatOptionsAsync(cancellationToken).ConfigureAwait(false);
@@ -39,7 +39,7 @@ public sealed class AiChatService(
         ArgumentNullException.ThrowIfNull(model);
         ArgumentNullException.ThrowIfNull(messages);
 
-        logger.LogInformation("Потоковый запрос к {Provider}/{Model}, сообщений: {Count}", model.Provider, model.Name, messages.Count);
+        logger.LogInformation("Потоковый запрос к {Provider}/{Model}, сообщений: {Count}", model.ProviderKey, model.Name, messages.Count);
 
         var client = chatClientFactory.GetClient(model);
         var chatOptions = await CreateChatOptionsAsync(cancellationToken).ConfigureAwait(false);
