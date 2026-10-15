@@ -12,9 +12,10 @@ public sealed class AiModelCatalog(
 {
     public IReadOnlyList<AiModel> GetModels()
     {
-        List<AiModel> models = [];
-
-        models.AddRange(ollamaOptions.Value.Models.Select(name => new AiModel(AiProvider.Ollama, name)));
+        List<AiModel> models =
+        [
+            .. ollamaOptions.Value.Models.Select(name => new AiModel(AiProvider.Ollama, name))
+        ];
 
         if (!string.IsNullOrWhiteSpace(deepSeekOptions.Value.Model))
             models.Add(new AiModel(AiProvider.DeepSeek, deepSeekOptions.Value.Model));
