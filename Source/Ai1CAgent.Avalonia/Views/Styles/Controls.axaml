@@ -111,6 +111,12 @@
         <Setter Property="MinHeight" Value="44" />
     </Style>
 
+    <Style Selector="TextBlock.message-time">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        <Setter Property="Margin" Value="0,2,0,0" />
+    </Style>
+
     <!--  Размышления модели: шапка «Думает...» и раскрываемый текст  -->
     <Style Selector="ToggleButton.thought">
         <Setter Property="Background" Value="Transparent" />

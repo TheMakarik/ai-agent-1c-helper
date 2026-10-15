@@ -9,7 +9,6 @@ using Avalonia.VisualTree;
 using AvaloniaEdit;
 using AvaloniaEdit.TextMate;
 using Markdown.Avalonia;
-using TextMateSharp.Grammars;
 
 namespace Ai1CAgent.Avalonia.Views.Controls;
 
@@ -19,10 +18,10 @@ public sealed class MarkdownView : ContentControl
         AvaloniaProperty.Register<MarkdownView, string?>(nameof(Markdown));
 
     private static readonly Regex CodeFence = new(
-        @"^[ \t]*```[ \t]*(?<lang>[A-Za-z0-9#+._-]*)[ \t]*$",
+        @"^[ \t]*```[ \t]*(?<lang>[A-Za-z0-9#+._-А-Яа-яЁё]*)[ \t]*$",
         RegexOptions.Multiline | RegexOptions.Compiled);
 
-    private static readonly RegistryOptions Registry = new(ThemeName.Light);
+    private static readonly BslRegistryOptions Registry = new();
 
     private readonly MarkdownScrollViewer _viewer;
     private readonly HashSet<TextEditor> _highlighted = [];
@@ -98,7 +97,7 @@ public sealed class MarkdownView : ContentControl
             if (!_highlighted.Add(editor))
                 continue;
 
-            var scope = index < _languages.Length ? ResolveScope(_languages[index]) : null;
+            var scope = index < _languages.Length ? Registry.ResolveScope(_languages[index]) : null;
 
             if (scope is null)
                 continue;
@@ -119,19 +118,5 @@ public sealed class MarkdownView : ContentControl
             languages[index] = fences[index * 2].Groups["lang"].Value;
 
         return languages;
-    }
-
-    private static string? ResolveScope(string language)
-    {
-        if (language.Length == 0)
-            return null;
-
-        var extension = language.StartsWith('.') ? language : $".{language}";
-        var scope = Registry.GetScopeByExtension(extension);
-
-        if (string.IsNullOrEmpty(scope))
-            scope = Registry.GetScopeByLanguageId(language);
-
-        return string.IsNullOrEmpty(scope) ? null : scope;
     }
 }

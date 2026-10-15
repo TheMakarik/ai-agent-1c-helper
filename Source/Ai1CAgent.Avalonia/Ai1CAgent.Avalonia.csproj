@@ -16,6 +16,9 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
+        <EmbeddedResource Include="Grammars\bsl.tmLanguage.json">
+            <LogicalName>Ai1CAgent.Avalonia.Grammars.bsl.tmLanguage.json</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

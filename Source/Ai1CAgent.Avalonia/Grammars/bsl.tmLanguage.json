@@ -1,0 +1,134 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "1C (BSL)",
+  "scopeName": "source.bsl",
+  "fileTypes": [
+    ".bsl",
+    ".os"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#preprocessor"
+    },
+    {
+      "include": "#directives"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#literals"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#functions"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.bsl",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.bsl",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.bsl",
+              "match": "\"\""
+            }
+          ]
+        }
+      ]
+    },
+    "preprocessor": {
+      "patterns": [
+        {
+          "name": "keyword.control.directive.bsl",
+          "match": "(?i)^\\s*#[A-Za-zА-Яа-яЁё]+"
+        }
+      ]
+    },
+    "directives": {
+      "patterns": [
+        {
+          "name": "storage.modifier.directive.bsl",
+          "match": "(?i)&[A-Za-zА-Яа-яЁё]+"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.bsl",
+          "match": "(?i)(?<![A-Za-zА-Яа-яЁё0-9_])\\d+(\\.\\d+)?(?![A-Za-zА-Яа-яЁё0-9_])"
+        }
+      ]
+    },
+    "literals": {
+      "patterns": [
+        {
+          "name": "constant.language.bsl",
+          "match": "(?i)(?<![A-Za-zА-Яа-яЁё0-9_])(Истина|Ложь|Неопределено|Null)(?![A-Za-zА-Яа-яЁё0-9_])"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.bsl",
+          "match": "(?i)(?<![A-Za-zА-Яа-яЁё0-9_])(Процедура|КонецПроцедуры|Функция|КонецФункции|Перем|Экспорт|Знач|Если|Тогда|ИначеЕсли|Иначе|КонецЕсли|Пока|Цикл|КонецЦикла|Для|Каждого|Из|По|Возврат|Прервать|Продолжить|Новый|Попытка|Исключение|КонецПопытки|ВызватьИсключение|Ждать|Асинх)(?![A-Za-zА-Яа-яЁё0-9_])"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.bsl",
+          "match": "(?i)(?<![A-Za-zА-Яа-яЁё0-9_])(Строка|Число|Дата|Булево|Массив|Структура|Соответствие|СписокЗначений|ТаблицаЗначений|ДеревоЗначений|ФиксированнаяСтруктура|ФиксированныйМассив|Ссылка|ХранилищеЗначения|ДвоичныеДанные)(?![A-Za-zА-Яа-яЁё0-9_])"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "support.function.bsl",
+          "match": "(?i)(?<![A-Za-zА-Яа-яЁё0-9_])(Сообщить|Найти|ЗначениеЗаполнено|ТипЗнч|Формат|СокрЛП|СтрШаблон|СтрДлина|СтрЗаменить|ОписаниеТипов|ПредопределенноеЗначение)(?![A-Za-zА-Яа-яЁё0-9_])"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.bsl",
+          "match": "(?i)(?<![A-Za-zА-Яа-яЁё0-9_])(И|Или|Не)(?![A-Za-zА-Яа-яЁё0-9_])"
+        },
+        {
+          "name": "keyword.operator.bsl",
+          "match": "<=|>=|<>|=|<|>"
+        }
+      ]
+    }
+  }
+}

@@ -359,6 +359,11 @@
                                             <controls:MarkdownView
                                                 Markdown="{Binding Text}"
                                                 IsVisible="{Binding !IsUser}" />
+
+                                            <TextBlock
+                                                Classes="message-time"
+                                                HorizontalAlignment="Right"
+                                                Text="{Binding TimeText}" />
                                         </StackPanel>
                                     </Border>
                                     <Panel

@@ -1,13 +1,17 @@
+using System;
 using Ai1CAgent.Core.Models;
 using ReactiveUI;
 
 namespace Ai1CAgent.Avalonia.ViewModels;
 
-public sealed class ChatMessageViewModel(AiChatRole role, string text) : ViewModelBase
+public sealed class ChatMessageViewModel(AiChatRole role, string text, DateTimeOffset? timestamp = null)
+    : ViewModelBase
 {
     private const int MaxDots = 3;
     private const char DotFill = ' ';
     private const char Dot = '.';
+
+    private readonly DateTimeOffset _timestamp = timestamp ?? DateTimeOffset.Now;
 
     private string _text = text;
     private string _reasoning = string.Empty;
@@ -20,6 +24,8 @@ public sealed class ChatMessageViewModel(AiChatRole role, string text) : ViewMod
     public bool IsUser => Role is AiChatRole.User;
 
     public bool IsAssistant => Role is not AiChatRole.User;
+
+    public string TimeText => _timestamp.ToString("HH:mm");
 
     public string Text
     {
