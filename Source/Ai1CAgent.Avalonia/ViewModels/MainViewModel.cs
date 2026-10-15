@@ -400,7 +400,7 @@ public sealed class MainViewModel : ViewModelBase
 
     private async Task LoadDialogMessagesAsync(ChatDialogViewModel dialog)
     {
-        if (dialog.SessionId is not { } sessionId || !dialog.IsEmpty)
+        if (dialog is null || dialog.SessionId is not { } sessionId || !dialog.IsEmpty)
             return;
 
         try
@@ -506,7 +506,7 @@ public sealed class MainViewModel : ViewModelBase
         if (Dialogs.Count == 0)
             Dialogs.Add(CreateDialogViewModel());
 
-        if (ReferenceEquals(dialog, SelectedDialog))
+        if (SelectedDialog is null || !Dialogs.Contains(SelectedDialog))
             SelectedDialog = Dialogs[0];
 
         SaveUiState();
@@ -628,7 +628,7 @@ public sealed class MainViewModel : ViewModelBase
             SelectedChatProvider?.ProviderKey,
             SelectedChatModel?.Name,
             Projects.SelectedProject?.Id,
-            SelectedDialog.SessionId);
+            SelectedDialog?.SessionId);
 
         _ = _uiStateStore.SaveAsync(state, CancellationToken.None);
     }
