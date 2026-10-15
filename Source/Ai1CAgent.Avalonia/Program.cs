@@ -1,6 +1,9 @@
 ﻿using Avalonia;
 using ReactiveUI.Avalonia;
 using System;
+#if DEBUG
+using Declarative.Avalonia.AgentTools;
+#endif
 
 namespace Ai1CAgent.Avalonia;
 
@@ -19,6 +22,7 @@ sealed class Program
             .UsePlatformDetect()
 #if DEBUG
             .WithDeveloperTools()
+            .UseAgentInspector()
 #endif
             .WithInterFont()
             .LogToTrace()

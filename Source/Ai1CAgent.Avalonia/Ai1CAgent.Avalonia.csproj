@@ -36,6 +36,24 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     </ItemGroup>
 
+    <!-- Dev-only in-process MCP-инспектор (loopback 127.0.0.1:5599). Тянет ASP.NET/MCP-стек,
+         поэтому подключается только в Debug и никогда не попадает в Release/тримминг. -->
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+        <PackageReference Include="Declarative.Avalonia.AgentTools" Version="12.1.1" />
+    </ItemGroup>
+
+    <!-- Транзитивный Avalonia.Markup.Declarative несёт source generator под Roslyn 5.3, а SDK
+         10.0.112 несёт Roslyn 5.0 (CS9057). Приложение использует XAML, а не декларативные
+         ViewBase, поэтому генератор не нужен — удаляем его из набора анализаторов. -->
+    <Target Name="RemoveDeclarativeSourceGenerator"
+            AfterTargets="ResolveLockFileAnalyzers"
+            BeforeTargets="CoreCompile"
+            Condition="'$(Configuration)' == 'Debug'">
+        <ItemGroup>
+            <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Avalonia.Markup.Declarative.SourceGenerator'" />
+        </ItemGroup>
+    </Target>
+
     <ItemGroup>
         <TrimmerRootAssembly Include="Serilog" />
         <TrimmerRootAssembly Include="Serilog.Extensions.Logging" />

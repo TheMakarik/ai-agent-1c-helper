@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "avalonia-agent-inspector": {
+      "type": "http",
+      "url": "http://127.0.0.1:5599"
+    }
+  }
+}
