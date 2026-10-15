@@ -6,6 +6,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai.Interfaces;
@@ -17,6 +18,7 @@ namespace Ai1CAgent.Avalonia.ViewModels;
 public sealed class SettingsViewModel : ViewModelBase
 {
     private readonly IAiSettingsStore _settingsStore;
+    private readonly IAppSettingsStore _appSettingsStore;
     private readonly ILogger<SettingsViewModel> _logger;
     private ProviderSettingsViewModel? _selectedProvider;
     private string _newProviderName = string.Empty;
@@ -24,13 +26,17 @@ public sealed class SettingsViewModel : ViewModelBase
     private string _statusMessage = string.Empty;
     private bool _isSaving;
     private bool _isDirty;
+    private bool _allowWrite;
 
     public SettingsViewModel(
         IAiSettingsStore settingsStore,
+        IAppSettingsStore appSettingsStore,
         ILogger<SettingsViewModel> logger)
     {
         _settingsStore = settingsStore;
+        _appSettingsStore = appSettingsStore;
         _logger = logger;
+        _allowWrite = appSettingsStore.Get().AllowWrite;
 
         Providers = [];
         BuildProviders();
@@ -81,6 +87,16 @@ public sealed class SettingsViewModel : ViewModelBase
     }
 
     public bool HasSelectedProvider => _selectedProvider is not null;
+
+    public bool AllowWrite
+    {
+        get => _allowWrite;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _allowWrite, value);
+            _ = _appSettingsStore.SaveAsync(new AppSettings(value), CancellationToken.None);
+        }
+    }
 
     public IReadOnlyList<AiApiFormat> Formats { get; } = [AiApiFormat.OpenAi, AiApiFormat.Anthropic];
 

@@ -27,6 +27,10 @@ internal static class ToolNameDisplay
         ["GitBranches"] = "ВеткиGit",
         ["CSharpOutline"] = "СтруктураCSharp",
         ["RunCommand"] = "КомандаТерминала",
+        ["CanWrite"] = "МожноЗаписать",
+        ["Write"] = "ЗаписатьФайл",
+        ["Touch"] = "СоздатьФайл",
+        ["SearchSkills"] = "ПоискСкиллов",
     };
 
     public static string Resolve(string toolName) =>

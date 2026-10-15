@@ -32,6 +32,7 @@ public static class ChatServiceBuilder
             new SkillToolProvider(A.Dummy<ISkillStore>(), A.Dummy<ILogger<SkillToolProvider>>()),
             new DeveloperToolProvider(A.Dummy<ILogger<DeveloperToolProvider>>()),
             new SystemDocumentationToolProvider(A.Dummy<ISystemDocumentation>()),
+            A.Dummy<IAppSettingsStore>(),
             A.Dummy<ILogger<AiChatService>>());
 
         return (service, factory);

@@ -1,3 +1,4 @@
+using System.Text;
 using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Modules.Configuration;
@@ -44,6 +45,14 @@ public sealed class SkillToolProvider(
 
     private const string DeleteSchema = ReadSchema;
 
+    private const string SearchSchema = """
+        {
+          "type": "object",
+          "properties": { "query": { "type": "string", "description": "Текст для поиска по имени и содержимому скиллов." } },
+          "required": ["query"]
+        }
+        """;
+
     public IReadOnlyList<AITool> GetTools(long? projectId) =>
     [
         new ContextFunction(
@@ -71,6 +80,11 @@ public sealed class SkillToolProvider(
             "Удалить скилл базы знаний по имени.",
             DeleteSchema,
             (arguments, _) => ValueTask.FromResult(Delete(arguments, projectId))),
+        new ContextFunction(
+            "SearchSkills",
+            "Найти скиллы по тексту в имени и содержимом (общие и текущего проекта).",
+            SearchSchema,
+            (arguments, _) => ValueTask.FromResult(Search(arguments, projectId))),
     ];
 
     private string List(AIFunctionArguments arguments, long? projectId)
@@ -112,6 +126,36 @@ public sealed class SkillToolProvider(
         logger.LogInformation("Скилл {Scope}/{Name} удалён", scope, name);
 
         return $"Скилл «{name}» удалён.";
+    }
+
+    private string Search(AIFunctionArguments arguments, long? projectId)
+    {
+        var query = ConfigurationFunction.GetString(arguments, "query");
+
+        if (string.IsNullOrWhiteSpace(query))
+            throw new ArgumentException("Не задан поисковый запрос.");
+
+        var builder = new StringBuilder();
+        AppendMatches(SkillScope.Global, null, query, builder);
+
+        if (projectId is { } id)
+            AppendMatches(SkillScope.Local, id, query, builder);
+
+        return builder.Length == 0 ? "Совпадений не найдено." : builder.ToString();
+    }
+
+    private void AppendMatches(SkillScope scope, long? projectId, string query, StringBuilder builder)
+    {
+        foreach (var name in skillStore.List(scope, projectId))
+        {
+            var content = skillStore.Read(scope, projectId, name);
+
+            if (name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                (content?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false))
+            {
+                builder.Append(scope).Append("/").AppendLine(name);
+            }
+        }
     }
 
     private static SkillScope ResolveScope(AIFunctionArguments arguments, long? projectId)

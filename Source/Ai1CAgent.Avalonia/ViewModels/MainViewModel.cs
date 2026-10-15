@@ -441,15 +441,18 @@ public sealed class MainViewModel : ViewModelBase
         if (Projects.SelectedProject is { CanSelect: true } project)
         {
             dialog.ProjectId = project.Id;
-            dialog.SetConfiguration(project.Path, _configurationToolProvider.IsConfigurationDump(project.Path));
+            dialog.SetConfiguration(project.Path, IsConfigurationFolder(project.Path));
             return;
         }
 
         var lastPath = _configurationPathStore.GetLastPath();
 
         if (lastPath.Length > 0)
-            dialog.SetConfiguration(lastPath, _configurationToolProvider.IsConfigurationDump(lastPath));
+            dialog.SetConfiguration(lastPath, IsConfigurationFolder(lastPath));
     }
+
+    private bool IsConfigurationFolder(string path) =>
+        Settings.AllowWrite || _configurationToolProvider.IsConfigurationDump(path);
 
     public void BeginRenameDialog(ChatDialogViewModel dialog)
     {
@@ -509,7 +512,7 @@ public sealed class MainViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(path))
             return;
 
-        dialog.SetConfiguration(path, _configurationToolProvider.IsConfigurationDump(path));
+        dialog.SetConfiguration(path, IsConfigurationFolder(path));
         await _configurationPathStore.SaveLastPathAsync(path);
     }
 

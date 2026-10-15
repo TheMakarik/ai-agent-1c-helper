@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using Ai1CAgent.Core.Models;
+using Ai1CAgent.Core.Common;
 using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Configuration.Interfaces;
 using Ai1CAgent.Modules.Context.Interfaces;
@@ -17,6 +18,7 @@ public sealed class AiChatService(
     ISkillToolProvider skillToolProvider,
     IDeveloperToolProvider developerToolProvider,
     ISystemDocumentationToolProvider systemDocumentationToolProvider,
+    IAppSettingsStore appSettingsStore,
     ILogger<AiChatService> logger) : IAiChatService
 {
     public async Task<string> SendAsync(
@@ -80,8 +82,9 @@ public sealed class AiChatService(
 
         if (!string.IsNullOrWhiteSpace(configurationPath) && Directory.Exists(configurationPath))
         {
+            var allowWrite = appSettingsStore.Get()?.AllowWrite ?? false;
             tools.AddRange(configurationToolProvider.GetTools(configurationPath));
-            tools.AddRange(developerToolProvider.GetTools(configurationPath));
+            tools.AddRange(developerToolProvider.GetTools(configurationPath, allowWrite));
         }
         else if (!string.IsNullOrWhiteSpace(configurationPath))
         {

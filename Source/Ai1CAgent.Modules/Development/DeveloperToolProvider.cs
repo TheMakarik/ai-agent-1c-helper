@@ -45,12 +45,31 @@ public sealed class DeveloperToolProvider(ILogger<DeveloperToolProvider> logger)
         }
         """;
 
-    public IReadOnlyList<AITool> GetTools(string rootPath)
+    private const string WriteSchema = """
+        {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Путь к файлу относительно корня проекта." },
+            "content": { "type": "string", "description": "Полное содержимое файла." }
+          },
+          "required": ["path", "content"]
+        }
+        """;
+
+    private const string TouchSchema = """
+        {
+          "type": "object",
+          "properties": { "path": { "type": "string", "description": "Путь к файлу относительно корня проекта." } },
+          "required": ["path"]
+        }
+        """;
+
+    public IReadOnlyList<AITool> GetTools(string rootPath, bool allowWrite)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
 
-        return
-        [
+        var tools = new List<AITool>
+        {
             new ContextFunction("GitStatus", "Показать ветку и изменённые файлы Git-репозитория проекта. " + GitRootHint, NoArgsSchema,
                 (_, _) => ValueTask.FromResult(Git(() => Status(rootPath), "GitStatus"))),
             new ContextFunction("GitLog", "Показать последние коммиты Git-репозитория проекта (хеш, дата, автор, сообщение). " + GitRootHint, LimitSchema,
@@ -63,7 +82,19 @@ public sealed class DeveloperToolProvider(ILogger<DeveloperToolProvider> logger)
                 (arguments, _) => ValueTask.FromResult(Git(() => CSharpOutline(rootPath, ConfigurationFunction.GetString(arguments, "path")), "CSharpOutline"))),
             new ContextFunction("RunCommand", "Выполнить команду оболочки в папке проекта и вернуть вывод. Используй для сборки, тестов и служебных команд.", CommandSchema,
                 (arguments, cancellationToken) => Run(arguments, rootPath, cancellationToken)),
-        ];
+            new ContextFunction("CanWrite", "Проверить, разрешена ли запись файлов (режим записи в настройках).", NoArgsSchema,
+                (_, _) => ValueTask.FromResult(allowWrite ? "Запись разрешена." : "Запись запрещена.")),
+        };
+
+        if (allowWrite)
+        {
+            tools.Add(new ContextFunction("Write", "Записать файл в папке проекта: создать или полностью перезаписать.", WriteSchema,
+                (arguments, _) => ValueTask.FromResult(WriteFile(rootPath, arguments))));
+            tools.Add(new ContextFunction("Touch", "Создать пустой файл в папке проекта по относительному пути.", TouchSchema,
+                (arguments, _) => ValueTask.FromResult(TouchFile(rootPath, arguments))));
+        }
+
+        return tools;
     }
 
     private string Git(Func<string> action, string operation)
@@ -201,6 +232,59 @@ public sealed class DeveloperToolProvider(ILogger<DeveloperToolProvider> logger)
 
     private static string Truncate(string value) =>
         value.Length <= MaxOutputLength ? value : value[..MaxOutputLength] + "… (вывод обрезан)";
+
+    private string WriteFile(string rootPath, AIFunctionArguments arguments)
+    {
+        var relative = ConfigurationFunction.GetString(arguments, "path");
+        var content = ConfigurationFunction.GetString(arguments, "content") ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(relative))
+            throw new ArgumentException("Не задан путь к файлу.");
+
+        var file = ResolvePath(rootPath, relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        File.WriteAllText(file, content);
+
+        logger.LogInformation("Модель записала файл {Path}", relative);
+
+        return $"Файл записан: {relative}";
+    }
+
+    private string TouchFile(string rootPath, AIFunctionArguments arguments)
+    {
+        var relative = ConfigurationFunction.GetString(arguments, "path");
+
+        if (string.IsNullOrWhiteSpace(relative))
+            throw new ArgumentException("Не задан путь к файлу.");
+
+        var file = ResolvePath(rootPath, relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+
+        if (!File.Exists(file))
+            File.WriteAllText(file, string.Empty);
+
+        logger.LogInformation("Модель создала файл {Path}", relative);
+
+        return $"Файл создан: {relative}";
+    }
+
+    private static string ResolvePath(string rootPath, string relative)
+    {
+        if (Path.IsPathRooted(relative))
+            throw new ArgumentException("Путь должен быть относительным к корню проекта.");
+
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootPath));
+        var full = Path.TrimEndingDirectorySeparator(
+            Path.GetFullPath(Path.Join(root, relative.Replace('/', Path.DirectorySeparatorChar))));
+
+        if (!string.Equals(full, root, StringComparison.Ordinal) &&
+            !full.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Путь выходит за пределы папки проекта.");
+        }
+
+        return full;
+    }
 
     private static class ProcessRunner
     {

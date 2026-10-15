@@ -16,6 +16,8 @@ public static class AppDataPaths
 
     public static string UiStateFile { get; } = Path.Join(Directory, "ui-state.json");
 
+    public static string AppSettingsFile { get; } = Path.Join(Directory, "app-settings.json");
+
     public static string SkillsGlobal { get; } = Path.Join(Directory, "Skills", "Global");
 
     public static string SkillsLocal { get; } = Path.Join(Directory, "Skills", "Local");

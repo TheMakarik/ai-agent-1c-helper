@@ -53,6 +53,27 @@
                                     <TextBlock
                                         Grid.Column="0"
                                         Classes="settings-label"
+                                        Text="Режим записи"
+                                        VerticalAlignment="Center" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Spacing="4">
+                                        <ToggleSwitch
+                                            Content="Разрешить ИИ записывать и создавать файлы"
+                                            IsChecked="{Binding AllowWrite, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Classes="page-subtitle"
+                                            Text="Разрешает функции CanWrite, Write и Touch, запись файлов в проекте и выбор любой папки. По умолчанию выключено."
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Classes="settings-card">
+                                <Grid ColumnDefinitions="190,*" ColumnSpacing="16">
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        Classes="settings-label"
                                         Text="Провайдер"
                                         VerticalAlignment="Center" />
                                     <Grid
