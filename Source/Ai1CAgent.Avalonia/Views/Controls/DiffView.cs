@@ -1,34 +1,34 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
-using AvaloniaEdit;
-using AvaloniaEdit.Document;
-using AvaloniaEdit.Rendering;
 
 namespace Ai1CAgent.Avalonia.Views.Controls;
 
 public sealed class DiffView : ContentControl
 {
+    private const int MaxLines = 5000;
+
     public static readonly StyledProperty<string?> DiffProperty =
         AvaloniaProperty.Register<DiffView, string?>(nameof(Diff));
 
-    private readonly TextEditor _editor;
+    private static readonly IBrush AddedBrush = new SolidColorBrush(Color.Parse("#1B5E20"));
+    private static readonly IBrush RemovedBrush = new SolidColorBrush(Color.Parse("#B71C1C"));
+    private static readonly IBrush HeaderBrush = new SolidColorBrush(Color.Parse("#6E6E6E"));
+    private static readonly IBrush NormalBrush = new SolidColorBrush(Color.Parse("#1F1F1F"));
+    private static readonly FontFamily Mono = new("monospace");
+
+    private readonly StackPanel _panel = new();
 
     public DiffView()
     {
-        _editor = new TextEditor
+        Content = new ScrollViewer
         {
-            IsReadOnly = true,
-            ShowLineNumbers = false,
-            FontFamily = new FontFamily("monospace"),
-            WordWrap = false,
+            Content = _panel,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
         };
-
-        _editor.TextArea.TextView.LineTransformers.Add(new DiffColorizer());
-        Content = _editor;
     }
 
     public string? Diff
@@ -42,30 +42,42 @@ public sealed class DiffView : ContentControl
         base.OnPropertyChanged(change);
 
         if (change.Property == DiffProperty)
-            _editor.Text = Diff ?? string.Empty;
+            Render(Diff);
     }
 
-    private sealed class DiffColorizer : DocumentColorizingTransformer
+    private void Render(string? diff)
     {
-        private static readonly IBrush Added = new SolidColorBrush(Color.Parse("#1B5E20"));
-        private static readonly IBrush Removed = new SolidColorBrush(Color.Parse("#B71C1C"));
-        private static readonly IBrush Header = new SolidColorBrush(Color.Parse("#6E6E6E"));
+        _panel.Children.Clear();
 
-        protected override void ColorizeLine(DocumentLine line)
+        if (string.IsNullOrEmpty(diff))
+            return;
+
+        var count = 0;
+
+        foreach (var line in diff.ReplaceLineEndings("\n").Split('\n'))
         {
-            var text = CurrentContext.Document.GetText(line);
+            if (count++ >= MaxLines)
+            {
+                _panel.Children.Add(CreateLine("… (diff обрезан)", HeaderBrush));
+                break;
+            }
 
-            IBrush? brush =
-                text.StartsWith("+++", System.StringComparison.Ordinal) || text.StartsWith("---", System.StringComparison.Ordinal) ? Header
-                : text.StartsWith('+') ? Added
-                : text.StartsWith('-') ? Removed
-                : text.StartsWith("@@", System.StringComparison.Ordinal) ? Header
-                : null;
-
-            if (brush is null)
-                return;
-
-            ChangeLinePart(line.Offset, line.EndOffset, element => element.TextRunProperties.SetForegroundBrush(brush));
+            _panel.Children.Add(CreateLine(line, BrushFor(line)));
         }
     }
+
+    private static IBrush BrushFor(string line) =>
+        line.StartsWith("+++", StringComparison.Ordinal) || line.StartsWith("---", StringComparison.Ordinal) ? HeaderBrush
+        : line.StartsWith('+') ? AddedBrush
+        : line.StartsWith('-') ? RemovedBrush
+        : line.StartsWith("@@", StringComparison.Ordinal) ? HeaderBrush
+        : NormalBrush;
+
+    private static TextBlock CreateLine(string text, IBrush brush) => new()
+    {
+        Text = text.Length == 0 ? " " : text,
+        Foreground = brush,
+        FontFamily = Mono,
+        TextWrapping = TextWrapping.NoWrap,
+    };
 }

@@ -37,9 +37,15 @@ public sealed class GitDiffService : IGitDiffService
     {
         using var repository = Open(rootPath);
         var commit = ResolveCommit(repository, sha);
-        var patch = repository.Diff.Compare<Patch>(commit.Parents.FirstOrDefault()?.Tree, commit.Tree, [path]);
+        var patch = repository.Diff.Compare<Patch>(commit.Parents.FirstOrDefault()?.Tree, commit.Tree);
 
-        return patch.Content;
+        foreach (var change in patch)
+        {
+            if (string.Equals(change.Path, path, StringComparison.Ordinal))
+                return change.Patch;
+        }
+
+        return string.Empty;
     }
 
     public (string Old, string New) GetVersions(string rootPath, string sha, string path)
