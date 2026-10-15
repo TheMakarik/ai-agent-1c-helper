@@ -70,7 +70,7 @@
 
         <Grid
             Grid.Column="1"
-            RowDefinitions="Auto,Auto,*">
+            RowDefinitions="Auto,*">
 
             <!--  Верхнее меню разделов  -->
             <Border
@@ -78,14 +78,13 @@
                 Height="56"
                 Background="{StaticResource TopBarBrush}">
                 <ListBox
-                    Margin="32,0"
-                    VerticalAlignment="Center"
                     Classes="nav"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
                     ItemsSource="{Binding Sections}"
                     SelectedItem="{Binding SelectedSection}">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
+                            <UniformGrid Rows="1" />
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
@@ -106,33 +105,9 @@
                 </ListBox>
             </Border>
 
-            <!--  Серая полоса: выбор нейросети  -->
-            <Border
-                Grid.Row="1"
-                Classes="toolbar">
-                <ComboBox
-                    Margin="12,6"
-                    MinWidth="260"
-                    VerticalAlignment="Center"
-                    IsVisible="{Binding IsChatSelected}"
-                    ItemsSource="{Binding Models}"
-                    PlaceholderText="Нейросеть"
-                    SelectedItem="{Binding SelectedModel}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="models:AiModel">
-                            <TextBlock>
-                                <Run Text="{Binding Provider}" />
-                                <Run Text=": " />
-                                <Run Text="{Binding Name}" />
-                            </TextBlock>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </Border>
-
             <!--  Чат  -->
             <Grid
-                Grid.Row="2"
+                Grid.Row="1"
                 IsVisible="{Binding IsChatSelected}"
                 RowDefinitions="*,Auto">
                 <ScrollViewer
@@ -175,7 +150,7 @@
                     Grid.Row="1"
                     Margin="40,0,52,16"
                     Classes="input">
-                    <Grid ColumnDefinitions="*,Auto">
+                    <Grid ColumnDefinitions="*,Auto,Auto">
                         <TextBox
                             Grid.Column="0"
                             Classes="prompt"
@@ -189,7 +164,46 @@
                             </TextBox.KeyBindings>
                         </TextBox>
                         <Button
+                            x:Name="ModelButton"
                             Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Classes="model-picker"
+                            ToolTip.Tip="Выбрать нейросеть">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="6">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{Binding SelectedModel.Name, FallbackValue=Нейросеть}" />
+                                <ic:FluentIcon
+                                    VerticalAlignment="Center"
+                                    Icon="ChevronDown"
+                                    IconSize="Size16"
+                                    IconVariant="Regular" />
+                            </StackPanel>
+                            <Button.Flyout>
+                                <Flyout Placement="Top">
+                                    <ListBox
+                                        x:Name="ModelList"
+                                        MinWidth="220"
+                                        Classes="models"
+                                        ItemsSource="{Binding Models}"
+                                        SelectedItem="{Binding SelectedModel}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="models:AiModel">
+                                                <TextBlock>
+                                                    <Run Text="{Binding Provider}" />
+                                                    <Run Text=": " />
+                                                    <Run Text="{Binding Name}" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button
+                            Grid.Column="2"
                             VerticalAlignment="Center"
                             Classes="icon-button"
                             Command="{Binding SendCommand}"
@@ -205,7 +219,7 @@
 
             <!--  Заглушка для остальных разделов  -->
             <StackPanel
-                Grid.Row="2"
+                Grid.Row="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsVisible="{Binding !IsChatSelected}"

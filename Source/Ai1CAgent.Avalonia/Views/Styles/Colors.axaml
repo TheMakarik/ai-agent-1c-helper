@@ -9,7 +9,6 @@
     <SolidColorBrush x:Key="TopBarBrush" Color="#FFFCCF" />
     <SolidColorBrush x:Key="TopBarHoverBrush" Color="#FBF3B0" />
     <SolidColorBrush x:Key="TopBarSelectedBrush" Color="#F7EA94" />
-    <SolidColorBrush x:Key="ToolbarBrush" Color="#F1F1F1" />
     <SolidColorBrush x:Key="ContentBrush" Color="#FFFFFF" />
     <SolidColorBrush x:Key="BubbleBrush" Color="#F1F1F1" />
     <SolidColorBrush x:Key="BorderLineBrush" Color="#BDBDBD" />

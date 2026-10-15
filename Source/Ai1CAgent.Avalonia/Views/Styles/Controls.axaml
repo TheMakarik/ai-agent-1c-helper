@@ -1,6 +1,7 @@
 <Styles
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ic="using:FluentIcons.Avalonia">
 
     <!--  Заголовок боковой панели  -->
     <Style Selector="TextBlock.sidebar-header">
@@ -55,8 +56,9 @@
 
     <Style Selector="ListBox.nav ListBoxItem">
         <Setter Property="Padding" Value="10,6" />
-        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="CornerRadius" Value="0" />
         <Setter Property="FontSize" Value="15" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 
     <Style Selector="ListBox.dialogs ListBoxItem">
@@ -162,12 +164,55 @@
         <Setter Property="BorderThickness" Value="0" />
     </Style>
 
-    <!--  Серая полоса под меню  -->
-    <Style Selector="Border.toolbar">
-        <Setter Property="Background" Value="{StaticResource ToolbarBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
-        <Setter Property="BorderThickness" Value="1,1,0,1" />
-        <Setter Property="MinHeight" Value="44" />
+    <!--  Кнопка выбора нейросети: имя модели + переворачивающийся шеврон  -->
+    <Style Selector="Button.model-picker">
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.model-picker ic|FluentIcon">
+        <Setter Property="RenderTransform" Value="rotate(0deg)" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.model-picker:flyout-open ic|FluentIcon">
+        <Setter Property="RenderTransform" Value="rotate(180deg)" />
+    </Style>
+
+    <!--  Список нейросетей внутри выпадающего меню  -->
+    <Style Selector="ListBox.models">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="ListBox.models ListBoxItem">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+
+    <Style Selector="ListBox.models ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.models ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.models ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.models ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter, ListBox.models ListBoxItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
     </Style>
 
 </Styles>

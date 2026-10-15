@@ -11,6 +11,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         MessagesScrollViewer.PropertyChanged += OnMessagesScrollViewerPropertyChanged;
+        ModelList.SelectionChanged += OnModelListSelectionChanged;
+    }
+
+    private void OnModelListSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (ModelButton.Flyout is { IsOpen: true } flyout)
+            flyout.Hide();
     }
 
     private void OnMessagesScrollViewerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
