@@ -4,6 +4,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Ai1CAgent.Avalonia.Views.Controls"
+    xmlns:ic="using:FluentIcons.Avalonia"
     xmlns:models="using:Ai1CAgent.Core.Models"
     xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels">
 
@@ -16,11 +17,28 @@
             Classes="page-title"
             Text="Изменения" />
 
-        <TextBlock
+        <StackPanel
             Grid.Row="1"
-            Classes="page-subtitle"
             IsVisible="{Binding !HasRepository}"
-            Text="Папка проекта не является Git-репозиторием — наблюдать изменения нельзя." />
+            Spacing="8">
+            <TextBlock
+                Classes="page-subtitle"
+                Text="Папка проекта не является Git-репозиторием — наблюдать изменения нельзя."
+                TextWrapping="Wrap" />
+            <Button
+                Classes="settings-save"
+                Command="{Binding InitCommand}"
+                IsVisible="{Binding CanInitialize}"
+                ToolTip.Tip="Создать Git-репозиторий в папке проекта">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ic:FluentIcon
+                        Icon="Add"
+                        IconSize="Size16"
+                        IconVariant="Regular" />
+                    <TextBlock VerticalAlignment="Center" Text="Инициализировать Git-репозиторий" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
 
         <ComboBox
             Grid.Row="1"

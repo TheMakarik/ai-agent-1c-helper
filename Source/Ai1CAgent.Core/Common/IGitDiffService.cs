@@ -6,6 +6,8 @@ public interface IGitDiffService
 {
     bool IsRepository(string rootPath);
 
+    void Initialize(string rootPath);
+
     IReadOnlyList<GitCommitInfo> GetCommits(string rootPath, int limit);
 
     IReadOnlyList<GitFileChange> GetChangedFiles(string rootPath, string sha);

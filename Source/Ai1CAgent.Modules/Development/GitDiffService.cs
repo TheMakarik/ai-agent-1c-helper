@@ -9,6 +9,8 @@ public sealed class GitDiffService : IGitDiffService
     public bool IsRepository(string rootPath) =>
         !string.IsNullOrWhiteSpace(rootPath) && Repository.Discover(rootPath) is not null;
 
+    public void Initialize(string rootPath) => Repository.Init(rootPath);
+
     public IReadOnlyList<GitCommitInfo> GetCommits(string rootPath, int limit)
     {
         using var repository = Open(rootPath);

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
+using System.Threading.Tasks;
 using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Models;
 using Microsoft.Extensions.Logging;
@@ -23,7 +25,15 @@ public sealed class ChangesViewModel : ViewModelBase
     {
         _git = git;
         _logger = logger;
+
+        InitCommand = ReactiveCommand.CreateFromTask(InitializeAsync);
+        InitCommand.ThrownExceptions.Subscribe(exception =>
+            _logger.LogError(exception, "Не удалось инициализировать Git-репозиторий"));
     }
+
+    public ReactiveCommand<Unit, Unit> InitCommand { get; }
+
+    public bool CanInitialize => !HasRepository && _rootPath is { Length: > 0 };
 
     public ObservableCollection<GitCommitInfo> Commits { get; } = [];
 
@@ -79,6 +89,7 @@ public sealed class ChangesViewModel : ViewModelBase
         this.RaisePropertyChanged(nameof(SelectedFile));
 
         HasRepository = rootPath is { Length: > 0 } && _git.IsRepository(rootPath);
+        this.RaisePropertyChanged(nameof(CanInitialize));
 
         if (!HasRepository)
             return;
@@ -94,6 +105,17 @@ public sealed class ChangesViewModel : ViewModelBase
         {
             _logger.LogError(exception, "Не удалось загрузить коммиты");
         }
+    }
+
+    private Task InitializeAsync()
+    {
+        if (_rootPath is { Length: > 0 } root)
+        {
+            _git.Initialize(root);
+            Reload(root);
+        }
+
+        return Task.CompletedTask;
     }
 
     private void LoadFiles()
