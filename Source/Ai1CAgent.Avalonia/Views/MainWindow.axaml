@@ -3,66 +3,227 @@
     x:DataType="vm:MainViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Ai1CAgent.Avalonia.Views.Converters"
     xmlns:ic="using:FluentIcons.Avalonia"
     xmlns:models="using:Ai1CAgent.Core.Models"
     xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels"
+    Width="1040"
+    Height="720"
+    MinWidth="820"
+    MinHeight="480"
+    Background="{StaticResource ContentBrush}"
+    Foreground="{StaticResource TextBrush}"
     Icon="/Assets/avalonia-logo.ico"
     Title="Ai1CAgent">
 
-    <Grid
-        Margin="12"
-        RowDefinitions="Auto,Auto,*"
-        RowSpacing="8">
+    <Grid ColumnDefinitions="206,*">
 
-        <ComboBox
-            Grid.Row="0"
-            HorizontalAlignment="Stretch"
-            ItemsSource="{Binding Models}"
-            SelectedItem="{Binding SelectedModel}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="models:AiModel">
-                    <TextBlock>
-                        <Run Text="{Binding Provider}" />
-                        <Run Text=": " />
-                        <Run Text="{Binding Name}" />
-                    </TextBlock>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+        <!--  Боковая панель: логотип и история диалогов  -->
+        <Border
+            Grid.Column="0"
+            Background="{StaticResource SidebarBrush}">
+            <Grid
+                Margin="12,8,12,12"
+                RowDefinitions="Auto,Auto,Auto,*"
+                RowSpacing="8">
+                <Image
+                    Grid.Row="0"
+                    Height="30"
+                    Margin="0,4,0,0"
+                    HorizontalAlignment="Left"
+                    Source="{StaticResource LogoImage}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Classes="sidebar-header"
+                    Text="История диалогов" />
+                <Button
+                    Grid.Row="2"
+                    Classes="sidebar-button"
+                    Command="{Binding NewDialogCommand}">
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <ic:FluentIcon
+                            Icon="ChatAdd"
+                            IconSize="Size20"
+                            IconVariant="Regular" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="Новый диалог" />
+                    </StackPanel>
+                </Button>
+                <ListBox
+                    Grid.Row="3"
+                    Classes="dialogs"
+                    ItemsSource="{Binding Dialogs}"
+                    SelectedItem="{Binding SelectedDialog}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ChatDialogViewModel">
+                            <TextBlock
+                                Text="{Binding Title}"
+                                TextTrimming="CharacterEllipsis" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
 
         <Grid
-            Grid.Row="1"
-            ColumnDefinitions="*,Auto"
-            ColumnSpacing="8">
-            <TextBox
-                Grid.Column="0"
-                AcceptsReturn="True"
-                PlaceholderText="Запрос к нейросети"
-                Text="{Binding Prompt}"
-                TextWrapping="Wrap" />
-            <Button
-                Grid.Column="1"
-                VerticalAlignment="Stretch"
-                Command="{Binding SendCommand}">
-                <StackPanel
-                    Orientation="Horizontal"
-                    Spacing="8">
-                    <ic:FluentIcon
-                        Icon="Send"
-                        IconSize="Size20"
-                        IconVariant="Regular" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        Text="Отправить" />
-                </StackPanel>
-            </Button>
-        </Grid>
+            Grid.Column="1"
+            RowDefinitions="Auto,Auto,*">
 
-        <TextBox
-            Grid.Row="2"
-            IsReadOnly="True"
-            Text="{Binding Answer}"
-            TextWrapping="Wrap" />
+            <!--  Верхнее меню разделов  -->
+            <Border
+                Grid.Row="0"
+                Height="56"
+                Background="{StaticResource TopBarBrush}">
+                <ListBox
+                    Margin="32,0"
+                    VerticalAlignment="Center"
+                    Classes="nav"
+                    ItemsSource="{Binding Sections}"
+                    SelectedItem="{Binding SelectedSection}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <ic:FluentIcon
+                                    Icon="{Binding Section, Converter={converters:AppSectionToIconConverter}}"
+                                    IconSize="Size24"
+                                    IconVariant="Regular" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{Binding Title}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!--  Серая полоса: выбор нейросети  -->
+            <Border
+                Grid.Row="1"
+                Classes="toolbar">
+                <ComboBox
+                    Margin="12,6"
+                    MinWidth="260"
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding IsChatSelected}"
+                    ItemsSource="{Binding Models}"
+                    PlaceholderText="Нейросеть"
+                    SelectedItem="{Binding SelectedModel}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:AiModel">
+                            <TextBlock>
+                                <Run Text="{Binding Provider}" />
+                                <Run Text=": " />
+                                <Run Text="{Binding Name}" />
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Border>
+
+            <!--  Чат  -->
+            <Grid
+                Grid.Row="2"
+                IsVisible="{Binding IsChatSelected}"
+                RowDefinitions="*,Auto">
+                <ScrollViewer
+                    x:Name="MessagesScrollViewer"
+                    Grid.Row="0">
+                    <ItemsControl
+                        Margin="64,24,52,24"
+                        ItemsSource="{Binding SelectedDialog.Messages}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="28" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ChatMessageViewModel">
+                                <Grid
+                                    Classes="message"
+                                    Classes.user="{Binding IsUser}"
+                                    RowDefinitions="*,Auto">
+                                    <Border
+                                        Grid.Row="0"
+                                        Classes="bubble">
+                                        <SelectableTextBlock
+                                            Text="{Binding Text}"
+                                            TextWrapping="Wrap" />
+                                    </Border>
+                                    <Panel
+                                        Grid.Row="1"
+                                        Classes="tail">
+                                        <Path Classes="tail-fill" />
+                                        <Path Classes="tail-stroke" />
+                                    </Panel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <Border
+                    Grid.Row="1"
+                    Margin="40,0,52,16"
+                    Classes="input">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox
+                            Grid.Column="0"
+                            Classes="prompt"
+                            PlaceholderText="Напишите сообщение…"
+                            Text="{Binding Prompt}"
+                            TextWrapping="Wrap">
+                            <TextBox.KeyBindings>
+                                <KeyBinding
+                                    Command="{Binding SendCommand}"
+                                    Gesture="Enter" />
+                            </TextBox.KeyBindings>
+                        </TextBox>
+                        <Button
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Classes="icon-button"
+                            Command="{Binding SendCommand}"
+                            ToolTip.Tip="Отправить">
+                            <ic:FluentIcon
+                                Icon="Send"
+                                IconSize="Size20"
+                                IconVariant="Regular" />
+                        </Button>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!--  Заглушка для остальных разделов  -->
+            <StackPanel
+                Grid.Row="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsVisible="{Binding !IsChatSelected}"
+                Spacing="12">
+                <ic:FluentIcon
+                    HorizontalAlignment="Center"
+                    Foreground="{StaticResource MutedTextBrush}"
+                    Icon="{Binding SelectedSection.Section, Converter={converters:AppSectionToIconConverter}}"
+                    IconSize="Size48"
+                    IconVariant="Regular" />
+                <TextBlock
+                    Foreground="{StaticResource MutedTextBrush}"
+                    TextAlignment="Center">
+                    <Run Text="{Binding SelectedSection.Title}" />
+                    <Run Text=" — раздел в разработке" />
+                </TextBlock>
+            </StackPanel>
+        </Grid>
     </Grid>
 
 </Window>

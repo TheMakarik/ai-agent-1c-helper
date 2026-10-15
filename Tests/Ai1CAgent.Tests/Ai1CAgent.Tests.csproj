@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Ai1CAgent.Tests</RootNamespace>
     <IsPackable>false</IsPackable>
+    <!-- Как в приложении под full trimming: JSON только через source generators. -->
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <ItemGroup>

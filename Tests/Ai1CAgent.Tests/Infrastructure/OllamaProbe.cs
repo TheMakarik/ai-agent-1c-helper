@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Ai1CAgent.Tests.Infrastructure;
 
-public static class OllamaProbe
+public static partial class OllamaProbe
 {
     public const string Endpoint = "http://localhost:11434";
 
@@ -13,7 +13,7 @@ public static class OllamaProbe
 
         try
         {
-            var response = await httpClient.GetFromJsonAsync<TagsResponse>($"{Endpoint}/api/tags", cancellationToken);
+            var response = await httpClient.GetFromJsonAsync($"{Endpoint}/api/tags", ProbeJsonContext.Default.TagsResponse, cancellationToken);
             return response?.Models.Any(item => item.Name == model) ?? false;
         }
         catch (HttpRequestException)
@@ -26,7 +26,10 @@ public static class OllamaProbe
         }
     }
 
-    private sealed record TagsResponse([property: JsonPropertyName("models")] IReadOnlyList<TagModel> Models);
+    internal sealed record TagsResponse([property: JsonPropertyName("models")] IReadOnlyList<TagModel> Models);
 
-    private sealed record TagModel([property: JsonPropertyName("name")] string Name);
+    internal sealed record TagModel([property: JsonPropertyName("name")] string Name);
+
+    [JsonSerializable(typeof(TagsResponse))]
+    private sealed partial class ProbeJsonContext : JsonSerializerContext;
 }

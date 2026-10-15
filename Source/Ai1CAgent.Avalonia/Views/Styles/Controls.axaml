@@ -1,0 +1,173 @@
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  Заголовок боковой панели  -->
+    <Style Selector="TextBlock.sidebar-header">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource SidebarHeaderBrush}" />
+    </Style>
+
+    <!--  Иконочная кнопка  -->
+    <Style Selector="Button.icon-button">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.icon-button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!--  Кнопка «Новый диалог»  -->
+    <Style Selector="Button.sidebar-button">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+
+    <Style Selector="Button.sidebar-button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="Button.sidebar-button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!--  Списки на цветном фоне: навигация и история диалогов  -->
+    <Style Selector="ListBox.nav, ListBox.dialogs">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="ListBox.nav ListBoxItem, ListBox.dialogs ListBoxItem">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <Style Selector="ListBox.nav ListBoxItem">
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style Selector="ListBox.dialogs ListBoxItem">
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+
+    <Style Selector="ListBox.nav ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource TopBarHoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.nav ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter, ListBox.nav ListBoxItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource TopBarSelectedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.dialogs ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.dialogs ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="ListBox.dialogs ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.dialogs ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter, ListBox.dialogs ListBoxItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!--  Сообщения чата: пользователь справа, нейросеть слева  -->
+    <Style Selector="Grid.message">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="MaxWidth" Value="520" />
+    </Style>
+
+    <Style Selector="Grid.message.user">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
+    <Style Selector="Border.bubble">
+        <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="14,10" />
+        <Setter Property="MinWidth" Value="120" />
+        <Setter Property="MinHeight" Value="44" />
+    </Style>
+
+    <!--  Хвостик пузыря: заливка закрывает нижнюю линию рамки, обводка дорисовывает две стороны  -->
+    <Style Selector="Panel.tail">
+        <Setter Property="Width" Value="12" />
+        <Setter Property="Height" Value="10" />
+        <Setter Property="Margin" Value="0,-1,0,0" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+
+    <Style Selector="Grid.message.user Panel.tail">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
+    <Style Selector="Path.tail-fill">
+        <Setter Property="Fill" Value="{StaticResource BubbleBrush}" />
+        <Setter Property="Data" Value="M0,0 L12,0 L0,10 Z" />
+    </Style>
+
+    <Style Selector="Grid.message.user Path.tail-fill">
+        <Setter Property="Data" Value="M0,0 L12,0 L12,10 Z" />
+    </Style>
+
+    <Style Selector="Path.tail-stroke">
+        <Setter Property="Stroke" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Data" Value="M0.5,0 L0.5,10 L12,0.5" />
+    </Style>
+
+    <Style Selector="Grid.message.user Path.tail-stroke">
+        <Setter Property="Data" Value="M11.5,0 L11.5,10 L0,0.5" />
+    </Style>
+
+    <!--  Поле ввода внутри серой рамки  -->
+    <Style Selector="Border.input">
+        <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4,2,6,2" />
+        <Setter Property="MinHeight" Value="46" />
+    </Style>
+
+    <Style Selector="TextBox.prompt">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style Selector="TextBox.prompt /template/ Border#PART_BorderElement, TextBox.prompt:pointerover /template/ Border#PART_BorderElement, TextBox.prompt:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!--  Серая полоса под меню  -->
+    <Style Selector="Border.toolbar">
+        <Setter Property="Background" Value="{StaticResource ToolbarBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="BorderThickness" Value="1,1,0,1" />
+        <Setter Property="MinHeight" Value="44" />
+    </Style>
+
+</Styles>

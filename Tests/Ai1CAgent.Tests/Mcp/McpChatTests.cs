@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Ai1CAgent.Tests.Mcp;
 
+[Collection(LocalModelsCollection.Name)]
 public sealed class McpChatTests : IAsyncDisposable
 {
     private static readonly IReadOnlyCollection<AiChatMessage> EchoPrompt =

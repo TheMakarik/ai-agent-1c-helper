@@ -5,4 +5,6 @@ public sealed class OllamaOptions
     public string Endpoint { get; set; } = "http://localhost:11434";
 
     public IReadOnlyList<string> Models { get; set; } = [];
+
+    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(10);
 }

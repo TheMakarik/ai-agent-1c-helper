@@ -6,6 +6,7 @@ using FluentAssertions;
 
 namespace Ai1CAgent.Tests.Ai;
 
+[Collection(LocalModelsCollection.Name)]
 public sealed class OllamaChatTests : IDisposable
 {
     private readonly CancellationTokenSource _timeout = new(TimeSpan.FromMinutes(3));

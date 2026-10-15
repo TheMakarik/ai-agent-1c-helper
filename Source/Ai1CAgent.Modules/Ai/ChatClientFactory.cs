@@ -7,7 +7,6 @@ using Anthropic;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OllamaSharp;
 using OpenAI;
 
 namespace Ai1CAgent.Modules.Ai;
@@ -55,7 +54,19 @@ public sealed class ChatClientFactory(
     }
 
     private IChatClient CreateOllamaClient(string modelName)
-        => new OllamaApiClient(new Uri(ollamaOptions.Value.Endpoint), modelName);
+    {
+        var options = ollamaOptions.Value;
+        var clientOptions = new OpenAIClientOptions
+        {
+            Endpoint = new Uri(new Uri(options.Endpoint), "v1"),
+            NetworkTimeout = options.RequestTimeout,
+        };
+
+        // Ollama не проверяет ключ, но OpenAI-клиент требует непустой.
+        return new OpenAIClient(new ApiKeyCredential("ollama"), clientOptions)
+            .GetChatClient(modelName)
+            .AsIChatClient();
+    }
 
     private IChatClient CreateDeepSeekClient(string modelName)
     {
