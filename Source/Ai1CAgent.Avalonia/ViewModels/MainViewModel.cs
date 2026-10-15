@@ -29,6 +29,7 @@ public sealed class MainViewModel : ViewModelBase
     private readonly IConfigurationToolProvider _configurationToolProvider;
     private readonly IConfigurationPathStore _configurationPathStore;
     private readonly IFolderPickerService _folderPicker;
+    private readonly IUiStateStore _uiStateStore;
     private readonly ILogger<MainViewModel> _logger;
     private List<AiModel> _allModels = [];
     private ProviderPickerViewModel? _selectedChatProvider;
@@ -40,6 +41,7 @@ public sealed class MainViewModel : ViewModelBase
     private bool _isModelPickerOpen;
     private bool _isConfirmPending;
     private string _confirmSaveError = string.Empty;
+    private bool _initialized;
 
     public MainViewModel(
         IOptions<AiOptions> aiOptions,
@@ -50,6 +52,7 @@ public sealed class MainViewModel : ViewModelBase
         IConfigurationToolProvider configurationToolProvider,
         IConfigurationPathStore configurationPathStore,
         IFolderPickerService folderPicker,
+        IUiStateStore uiStateStore,
         ProjectsViewModel projects,
         SkillsViewModel skills,
         SettingsViewModel settings,
@@ -62,6 +65,7 @@ public sealed class MainViewModel : ViewModelBase
         _configurationToolProvider = configurationToolProvider;
         _configurationPathStore = configurationPathStore;
         _folderPicker = folderPicker;
+        _uiStateStore = uiStateStore;
         _logger = logger;
         Projects = projects;
         Skills = skills;
@@ -82,6 +86,7 @@ public sealed class MainViewModel : ViewModelBase
         Dialogs.Add(_selectedDialog);
 
         RefreshModels();
+        ApplySavedModel(_uiStateStore.Get());
 
         settingsStore.SettingsChanged += (_, _) => Dispatcher.UIThread.Post(RefreshModels);
         Projects.SelectionChanged += OnProjectSelectionChanged;
@@ -155,6 +160,7 @@ public sealed class MainViewModel : ViewModelBase
         {
             this.RaiseAndSetIfChanged(ref _selectedChatModel, value);
             this.RaisePropertyChanged(nameof(SelectedModel));
+            SaveUiState();
         }
     }
 
@@ -228,6 +234,7 @@ public sealed class MainViewModel : ViewModelBase
         {
             this.RaiseAndSetIfChanged(ref _selectedDialog, value);
             _ = LoadDialogMessagesAsync(value);
+            SaveUiState();
         }
     }
 
@@ -334,9 +341,14 @@ public sealed class MainViewModel : ViewModelBase
 
     private async Task InitializeAsync()
     {
+        var state = _uiStateStore.Get();
+
         await Projects.LoadAsync(CancellationToken.None);
+        Projects.Select(state.ProjectId);
         Skills.Reload(Projects.SelectedProject?.Id);
-        await ReloadDialogsAsync();
+        await ReloadDialogsAsync(state.SessionId);
+
+        _initialized = true;
     }
 
     private void OnProjectSelectionChanged(object? sender, EventArgs e) =>
@@ -344,9 +356,10 @@ public sealed class MainViewModel : ViewModelBase
         {
             Skills.Reload(Projects.SelectedProject?.Id);
             _ = ReloadDialogsAsync();
+            SaveUiState();
         });
 
-    private async Task ReloadDialogsAsync()
+    private async Task ReloadDialogsAsync(long? preferredSessionId = null)
     {
         try
         {
@@ -366,7 +379,9 @@ public sealed class MainViewModel : ViewModelBase
             if (Dialogs.Count == 0)
                 Dialogs.Add(CreateDialogViewModel());
 
-            SelectedDialog = Dialogs[0];
+            SelectedDialog = (preferredSessionId is { } sessionId
+                ? Dialogs.FirstOrDefault(dialog => dialog.SessionId == sessionId)
+                : null) ?? Dialogs[0];
         }
         catch (Exception exception)
         {
@@ -550,6 +565,39 @@ public sealed class MainViewModel : ViewModelBase
                 answer?.SerializeContent() ?? string.Empty,
                 cancellationToken);
         }
+    }
+
+    private void ApplySavedModel(UiState state)
+    {
+        if (state.ProviderKey is not { Length: > 0 } key)
+            return;
+
+        var provider = ChatProviders.FirstOrDefault(item => item.ProviderKey == key);
+
+        if (provider is null)
+            return;
+
+        SelectedChatProvider = provider;
+
+        if (state.ModelName is { Length: > 0 } name &&
+            provider.Models.FirstOrDefault(model => model.Name == name) is { } model)
+        {
+            SelectedChatModel = model;
+        }
+    }
+
+    private void SaveUiState()
+    {
+        if (!_initialized)
+            return;
+
+        var state = new UiState(
+            SelectedChatProvider?.ProviderKey,
+            SelectedChatModel?.Name,
+            Projects.SelectedProject?.Id,
+            SelectedDialog.SessionId);
+
+        _ = _uiStateStore.SaveAsync(state, CancellationToken.None);
     }
 
     private async Task<long> EnsureSessionAsync(ChatDialogViewModel dialog, CancellationToken cancellationToken)

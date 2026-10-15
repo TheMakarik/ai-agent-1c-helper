@@ -74,6 +74,7 @@ public sealed class Bootstrapper
         services.AddSingleton<ISkillToolProvider, SkillToolProvider>();
         services.AddSingleton<IDeveloperToolProvider, DeveloperToolProvider>();
         services.AddSingleton<IEmbeddedSkills, EmbeddedSkills>();
+        services.AddSingleton<IUiStateStore, JsonUiStateStore>();
         services.AddSingleton(new Database());
         services.AddSingleton<IChatStore, SqliteChatStore>();
         services.AddSingleton<IProjectStore, SqliteProjectStore>();

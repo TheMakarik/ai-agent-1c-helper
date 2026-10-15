@@ -95,6 +95,17 @@ public sealed class ProjectsViewModel : ViewModelBase
         SelectedProject = Projects.FirstOrDefault(project => project.CanSelect);
     }
 
+    public void Select(long? projectId)
+    {
+        if (projectId is not { } id)
+            return;
+
+        var match = Projects.FirstOrDefault(project => project.Id == id);
+
+        if (match is { CanSelect: true })
+            SelectedProject = match;
+    }
+
     public void BeginRename(ProjectItemViewModel project)
     {
         project.PendingName = project.Name;
