@@ -62,6 +62,7 @@
 
     <Style Selector="ListBox.dialogs ListBoxItem">
         <Setter Property="Padding" Value="8,6" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
 
     <Style Selector="ListBox.nav ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">

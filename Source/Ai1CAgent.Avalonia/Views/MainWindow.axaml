@@ -204,7 +204,7 @@
                     ToolTip.Tip="История диалогов">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:ChatDialogViewModel">
-                            <Panel>
+                            <Panel Background="Transparent">
                                 <TextBlock
                                     IsVisible="{Binding !IsRenaming}"
                                     Text="{Binding Title}"
