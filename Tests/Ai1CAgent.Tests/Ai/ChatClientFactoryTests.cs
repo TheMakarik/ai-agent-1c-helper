@@ -86,24 +86,24 @@ public sealed class ChatClientFactoryTests
     }
 
     [Fact]
-    public void Resolve_WhenBuiltInProviderMatchedByEnumKey_ReturnsDescriptorFormatAndDefaultEndpoint()
+    public void Resolve_WhenBuiltInOllamaMatchedByEnumKey_ReturnsDescriptorFormatAndDefaultEndpoint()
     {
         // Arrange
         var store = CreateStore(new AiProviderSettings
         {
-            Provider = AiProvider.Claude,
-            ApiKey = "claude-secret",
+            Provider = AiProvider.Ollama,
+            ApiKey = "ollama-secret",
         });
 
         using var factory = CreateFactory(store);
 
         // Act
-        var resolved = factory.Resolve(new AiModel(AiProvider.Claude, "claude-opus-5-5"));
+        var resolved = factory.Resolve(new AiModel(AiProvider.Ollama, "qwen3.5:9b"));
 
         // Assert
-        resolved.Format.Should().Be(AiApiFormat.Anthropic);
-        resolved.Endpoint.Should().Be("https://api.anthropic.com");
-        resolved.ApiKey.Should().Be("claude-secret");
+        resolved.Format.Should().Be(AiApiFormat.OpenAi);
+        resolved.Endpoint.Should().Be("http://localhost:11434/v1");
+        resolved.ApiKey.Should().Be("ollama-secret");
     }
 
     [Fact]

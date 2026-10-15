@@ -49,9 +49,9 @@ public sealed class AiSettingsStoreTests : IDisposable
         const string legacyJson = """
             [
               {
-                "Provider": "DeepSeek",
-                "Model": "deepseek-flash",
-                "Endpoint": "https://api.deepseek.com",
+                "Provider": "Ollama",
+                "Model": "qwen3.5:9b",
+                "Endpoint": "http://localhost:11434/v1",
                 "ApiKey": "legacy-plain-key"
               },
               {
@@ -73,11 +73,11 @@ public sealed class AiSettingsStoreTests : IDisposable
         // Assert
         providers.Should().HaveCount(AiProviderDescriptors.All.Count + 1);
 
-        var deepSeek = providers[1];
-        deepSeek.Provider.Should().Be(AiProvider.DeepSeek);
-        deepSeek.Model.Should().Be("deepseek-flash");
-        deepSeek.Endpoint.Should().Be("https://api.deepseek.com");
-        deepSeek.ApiKey.Should().Be("legacy-plain-key");
+        var ollama = providers[0];
+        ollama.Provider.Should().Be(AiProvider.Ollama);
+        ollama.Model.Should().Be("qwen3.5:9b");
+        ollama.Endpoint.Should().Be("http://localhost:11434/v1");
+        ollama.ApiKey.Should().Be("legacy-plain-key");
 
         var custom = providers[^1];
         custom.Provider.Should().BeNull();
@@ -131,8 +131,8 @@ public sealed class AiSettingsStoreTests : IDisposable
         const string legacyJson = """
             [
               {
-                "Provider": "DeepSeek",
-                "Model": "deepseek-flash",
+                "Provider": "OpenAiCompatible",
+                "Model": "gpt-5",
                 "ApiKey": "legacy-plain-key"
               }
             ]
@@ -146,6 +146,32 @@ public sealed class AiSettingsStoreTests : IDisposable
 
         // Assert
         providers[1].ApiKey.Should().Be("legacy-plain-key");
+    }
+
+    [Fact]
+    public void GetProviders_WhenRetiredBuiltInProvidersOnDisk_DropsThem()
+    {
+        // Arrange
+        const string json = """
+            [
+              { "Provider": "DeepSeek", "Model": "deepseek-flash" },
+              { "Provider": "Claude", "Model": "claude-opus-5-5" },
+              { "Provider": "Kimi", "Model": "kimi-k3" },
+              { "Provider": "Glm", "Model": "glm-5.3" },
+              { "Provider": "ChatGpt", "Model": "gpt-6-astra" },
+              { "Provider": "Qwen", "Model": "qwen3.8-max" }
+            ]
+            """;
+
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(_settingsFile, json);
+
+        // Act
+        var providers = CreateSystemUnderTests().GetProviders();
+
+        // Assert
+        providers.Should().HaveCount(AiProviderDescriptors.All.Count);
+        providers.Should().OnlyContain(provider => !provider.IsCustom);
     }
 
     [Fact]
@@ -178,7 +204,7 @@ public sealed class AiSettingsStoreTests : IDisposable
         // Arrange
         const string json = """
             [
-              { "Provider": null, "Name": "Claude", "Endpoint": "https://fake.example" }
+              { "Provider": null, "Name": "Ollama", "Endpoint": "https://fake.example" }
             ]
             """;
 
@@ -199,7 +225,7 @@ public sealed class AiSettingsStoreTests : IDisposable
         // Arrange
         const string json = """
             [
-              { "Provider": "DeepSeek" }
+              { "Provider": "Ollama" }
             ]
             """;
 
@@ -212,8 +238,8 @@ public sealed class AiSettingsStoreTests : IDisposable
             [
                 new AiProviderSettings
                 {
-                    Provider = AiProvider.DeepSeek,
-                    Models = [new CustomModel("deepseek-flash"), new CustomModel("deepseek-v4-pro")],
+                    Provider = AiProvider.Ollama,
+                    Models = [new CustomModel("qwen3.5:9b"), new CustomModel("gemma4:e4b")],
                 },
             ],
         };
@@ -222,29 +248,29 @@ public sealed class AiSettingsStoreTests : IDisposable
         var providers = CreateSystemUnderTests(defaults).GetProviders();
 
         // Assert
-        var deepSeek = providers.Single(provider => provider.Provider == AiProvider.DeepSeek);
-        deepSeek.Models.Select(model => model.Name).Should().Equal("deepseek-flash", "deepseek-v4-pro");
+        var ollama = providers.Single(provider => provider.Provider == AiProvider.Ollama);
+        ollama.Models.Select(model => model.Name).Should().Equal("qwen3.5:9b", "gemma4:e4b");
     }
 
     [Fact]
-    public async Task SaveProvidersAsync_WhenClaudeModelHasAnthropicFormat_PreservesFormatAfterReload()
+    public async Task SaveProvidersAsync_WhenOllamaModelHasAnthropicFormat_PreservesFormatAfterReload()
     {
         // Arrange
         var systemUnderTests = CreateSystemUnderTests();
         List<AiProviderSettings> providers = [.. systemUnderTests.GetProviders()];
-        var claude = providers.Single(provider => provider.Provider == AiProvider.Claude);
-        claude.Models = [new CustomModel("claude-opus-5-5", AiApiFormat.Anthropic)];
-        claude.SelectedModel = new CustomModel("claude-opus-5-5", AiApiFormat.Anthropic);
+        var ollama = providers.Single(provider => provider.Provider == AiProvider.Ollama);
+        ollama.Models = [new CustomModel("qwen3.5:9b", AiApiFormat.Anthropic)];
+        ollama.SelectedModel = new CustomModel("qwen3.5:9b", AiApiFormat.Anthropic);
 
         // Act
         await systemUnderTests.SaveProvidersAsync(providers);
 
         // Assert
         var restored = CreateSystemUnderTests().GetProviders()
-            .Single(provider => provider.Provider == AiProvider.Claude);
+            .Single(provider => provider.Provider == AiProvider.Ollama);
         restored.Models.Should().ContainSingle()
-            .Which.Should().Be(new CustomModel("claude-opus-5-5", AiApiFormat.Anthropic));
-        restored.SelectedModel.Should().Be(new CustomModel("claude-opus-5-5", AiApiFormat.Anthropic));
+            .Which.Should().Be(new CustomModel("qwen3.5:9b", AiApiFormat.Anthropic));
+        restored.SelectedModel.Should().Be(new CustomModel("qwen3.5:9b", AiApiFormat.Anthropic));
     }
 
     [Fact]

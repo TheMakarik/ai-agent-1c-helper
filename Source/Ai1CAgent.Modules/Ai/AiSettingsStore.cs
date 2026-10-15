@@ -143,7 +143,10 @@ public sealed class AiSettingsStore : IAiSettingsStore
             var json = File.ReadAllText(_settingsFile);
             var persisted = JsonSerializer.Deserialize(json, AiSettingsJsonContext.Default.ListPersistedProvider) ?? [];
 
-            return persisted.Select(ToSettings).ToList();
+            return persisted
+                .Where(provider => !IsRetiredProvider(provider))
+                .Select(ToSettings)
+                .ToList();
         }
         catch (JsonException exception)
         {
@@ -188,6 +191,9 @@ public sealed class AiSettingsStore : IAiSettingsStore
 
         await File.WriteAllTextAsync(_settingsFile, json, cancellationToken).ConfigureAwait(false);
     }
+
+    private static bool IsRetiredProvider(PersistedProvider persisted) =>
+        persisted.Provider is { } name && AiProviderDescriptors.Retired.Contains(name);
 
     private AiProviderSettings ToSettings(PersistedProvider persisted)
     {

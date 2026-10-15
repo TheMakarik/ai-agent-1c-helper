@@ -19,14 +19,9 @@ public sealed class AiModelCatalogTests
         [
             new AiProviderSettings
             {
-                Provider = AiProvider.DeepSeek,
-                Models = [new CustomModel("deepseek-flash"), new CustomModel("deepseek-v4-pro")],
-                CustomModels = [new CustomModel("DEEPSEEK-FLASH")],
-            },
-            new AiProviderSettings
-            {
-                Provider = AiProvider.Claude,
-                SelectedModel = new CustomModel("claude-sonnet-5-5"),
+                Provider = AiProvider.Ollama,
+                Models = [new CustomModel("qwen3.5:9b"), new CustomModel("llama-local:8b")],
+                CustomModels = [new CustomModel("QWEN3.5:9B")],
             },
             new AiProviderSettings
             {
@@ -47,12 +42,12 @@ public sealed class AiModelCatalogTests
         var models = systemUnderTests.GetModels();
 
         // Assert
-        models.Should().HaveCount(6);
+        models.Should().HaveCount(4);
         models.Should().Contain(new AiModel(AiProvider.Ollama, "qwen3.5:9b"));
-        models.Should().Contain(new AiModel(AiProvider.DeepSeek, "deepseek-v4-pro"));
-        models.Should().Contain(new AiModel(AiProvider.Claude, "claude-sonnet-5-5"));
+        models.Should().Contain(new AiModel(AiProvider.Ollama, "gemma4:e4b"));
+        models.Should().Contain(new AiModel(AiProvider.Ollama, "llama-local:8b"));
         models.Should().Contain(new AiModel("Corp Proxy", "corp-model"));
-        models.Count(model => model.ProviderKey == "DeepSeek").Should().Be(2);
+        models.Count(model => model.ProviderKey == nameof(AiProvider.Ollama)).Should().Be(3);
         models.Should().OnlyContain(model => !string.IsNullOrWhiteSpace(model.ProviderKey));
     }
 }
