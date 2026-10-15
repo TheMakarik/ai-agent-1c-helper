@@ -4,6 +4,7 @@ using Ai1CAgent.Core.Models;
 using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Configuration.Interfaces;
 using Ai1CAgent.Modules.Context.Interfaces;
+using Ai1CAgent.Modules.Development.Interfaces;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +15,7 @@ public sealed class AiChatService(
     IConfigurationToolProvider configurationToolProvider,
     IProjectContextToolProvider projectContextToolProvider,
     ISkillToolProvider skillToolProvider,
+    IDeveloperToolProvider developerToolProvider,
     ISystemDocumentationToolProvider systemDocumentationToolProvider,
     ILogger<AiChatService> logger) : IAiChatService
 {
@@ -76,12 +78,14 @@ public sealed class AiChatService(
         List<AITool> tools = [.. systemDocumentationToolProvider.GetTools()];
         tools.AddRange(skillToolProvider.GetTools(projectId));
 
-        if (!string.IsNullOrWhiteSpace(configurationPath))
+        if (!string.IsNullOrWhiteSpace(configurationPath) && Directory.Exists(configurationPath))
         {
-            if (Directory.Exists(configurationPath))
-                tools.AddRange(configurationToolProvider.GetTools(configurationPath));
-            else
-                logger.LogWarning("Папка выгрузки конфигурации не найдена, функции чтения не переданы: {Path}", configurationPath);
+            tools.AddRange(configurationToolProvider.GetTools(configurationPath));
+            tools.AddRange(developerToolProvider.GetTools(configurationPath));
+        }
+        else if (!string.IsNullOrWhiteSpace(configurationPath))
+        {
+            logger.LogWarning("Папка проекта не найдена, функции чтения не переданы: {Path}", configurationPath);
         }
 
         if (projectId is { } id)

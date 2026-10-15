@@ -21,6 +21,12 @@ internal static class ToolNameDisplay
         ["context_get"] = "ПрочитатьКонтекст",
         ["context_set"] = "ОбновитьКонтекст",
         ["ReadSystemDocumentation"] = "ПрочитатьСистемнуюДокументацию",
+        ["GitStatus"] = "СтатусGit",
+        ["GitLog"] = "ИсторияGit",
+        ["GitDiff"] = "РазницаGit",
+        ["GitBranches"] = "ВеткиGit",
+        ["CSharpOutline"] = "СтруктураCSharp",
+        ["RunCommand"] = "КомандаТерминала",
     };
 
     public static string Resolve(string toolName) =>

@@ -4,6 +4,7 @@ using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Configuration;
 using Ai1CAgent.Modules.Context;
+using Ai1CAgent.Modules.Development;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -29,6 +30,7 @@ public static class ChatServiceBuilder
             new ConfigurationToolProvider(A.Dummy<ILogger<ConfigurationToolProvider>>()),
             new ProjectContextToolProvider(A.Dummy<IProjectStore>(), A.Dummy<ILogger<ProjectContextToolProvider>>()),
             new SkillToolProvider(A.Dummy<ISkillStore>(), A.Dummy<ILogger<SkillToolProvider>>()),
+            new DeveloperToolProvider(A.Dummy<ILogger<DeveloperToolProvider>>()),
             new SystemDocumentationToolProvider(A.Dummy<ISystemDocumentation>()),
             A.Dummy<ILogger<AiChatService>>());
 

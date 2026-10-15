@@ -11,6 +11,8 @@ using Ai1CAgent.Modules.Configuration;
 using Ai1CAgent.Modules.Configuration.Interfaces;
 using Ai1CAgent.Modules.Context;
 using Ai1CAgent.Modules.Context.Interfaces;
+using Ai1CAgent.Modules.Development;
+using Ai1CAgent.Modules.Development.Interfaces;
 using Ai1CAgent.Modules.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +72,7 @@ public sealed class Bootstrapper
         services.AddSingleton<ISystemDocumentationToolProvider, SystemDocumentationToolProvider>();
         services.AddSingleton<ISkillStore, FileSkillStore>();
         services.AddSingleton<ISkillToolProvider, SkillToolProvider>();
+        services.AddSingleton<IDeveloperToolProvider, DeveloperToolProvider>();
         services.AddSingleton<IEmbeddedSkills, EmbeddedSkills>();
         services.AddSingleton(new Database());
         services.AddSingleton<IChatStore, SqliteChatStore>();
