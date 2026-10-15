@@ -26,12 +26,17 @@
                 Margin="12,8,12,12"
                 RowDefinitions="Auto,Auto,Auto,*"
                 RowSpacing="8">
-                <Image
+                <StackPanel
                     Grid.Row="0"
-                    Height="30"
                     Margin="0,4,0,0"
                     HorizontalAlignment="Left"
-                    Source="{StaticResource LogoImage}" />
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <Image Height="30" Source="{StaticResource LogoImage}" />
+                    <Image
+                        Height="36"
+                        Source="avares://Ai1CAgent.Avalonia/Assets/apogey-logo.png" />
+                </StackPanel>
                 <TextBlock
                     Grid.Row="1"
                     Classes="sidebar-header"
