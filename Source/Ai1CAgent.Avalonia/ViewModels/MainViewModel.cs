@@ -55,6 +55,7 @@ public sealed class MainViewModel : ViewModelBase
         IUiStateStore uiStateStore,
         ProjectsViewModel projects,
         SkillsViewModel skills,
+        ChangesViewModel changes,
         SettingsViewModel settings,
         ILogger<MainViewModel> logger)
     {
@@ -69,6 +70,7 @@ public sealed class MainViewModel : ViewModelBase
         _logger = logger;
         Projects = projects;
         Skills = skills;
+        Changes = changes;
         Settings = settings;
         Title = aiOptions.Value.Title;
 
@@ -134,6 +136,8 @@ public sealed class MainViewModel : ViewModelBase
     public ProjectsViewModel Projects { get; }
 
     public SkillsViewModel Skills { get; }
+
+    public ChangesViewModel Changes { get; }
 
     public SettingsViewModel Settings { get; }
 
@@ -223,9 +227,11 @@ public sealed class MainViewModel : ViewModelBase
 
     public bool IsDocumentationSelected => SelectedSection.Section is AppSection.Documentation;
 
+    public bool IsChangesSelected => SelectedSection.Section is AppSection.Changes;
+
     public bool IsSettingsSelected => SelectedSection.Section is AppSection.Settings;
 
-    public bool IsPlaceholderSelected => !IsChatSelected && !IsProjectsSelected && !IsDocumentationSelected && !IsSettingsSelected;
+    public bool IsPlaceholderSelected => !IsChatSelected && !IsProjectsSelected && !IsDocumentationSelected && !IsChangesSelected && !IsSettingsSelected;
 
     public ChatDialogViewModel SelectedDialog
     {
@@ -270,6 +276,7 @@ public sealed class MainViewModel : ViewModelBase
         this.RaisePropertyChanged(nameof(IsChatSelected));
         this.RaisePropertyChanged(nameof(IsProjectsSelected));
         this.RaisePropertyChanged(nameof(IsDocumentationSelected));
+        this.RaisePropertyChanged(nameof(IsChangesSelected));
         this.RaisePropertyChanged(nameof(IsSettingsSelected));
         this.RaisePropertyChanged(nameof(IsPlaceholderSelected));
     }
@@ -346,6 +353,7 @@ public sealed class MainViewModel : ViewModelBase
         await Projects.LoadAsync(CancellationToken.None);
         Projects.Select(state.ProjectId);
         Skills.Reload(Projects.SelectedProject?.Id);
+        Changes.Reload(Projects.SelectedProject?.Path);
         await ReloadDialogsAsync(state.SessionId);
 
         _initialized = true;
@@ -355,6 +363,7 @@ public sealed class MainViewModel : ViewModelBase
         Dispatcher.UIThread.Post(() =>
         {
             Skills.Reload(Projects.SelectedProject?.Id);
+            Changes.Reload(Projects.SelectedProject?.Path);
             _ = ReloadDialogsAsync();
             SaveUiState();
         });

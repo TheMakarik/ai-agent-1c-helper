@@ -1,0 +1,64 @@
+<UserControl
+    x:Class="Ai1CAgent.Avalonia.Views.ChangesView"
+    x:DataType="vm:ChangesViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Ai1CAgent.Avalonia.Views.Controls"
+    xmlns:models="using:Ai1CAgent.Core.Models"
+    xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels">
+
+    <Grid
+        Margin="40,24,52,24"
+        RowDefinitions="Auto,Auto,Auto,*"
+        RowSpacing="12">
+        <TextBlock
+            Grid.Row="0"
+            Classes="page-title"
+            Text="Изменения" />
+
+        <TextBlock
+            Grid.Row="1"
+            Classes="page-subtitle"
+            IsVisible="{Binding !HasRepository}"
+            Text="Папка проекта не является Git-репозиторием — наблюдать изменения нельзя." />
+
+        <ComboBox
+            Grid.Row="1"
+            Classes="settings"
+            IsVisible="{Binding HasRepository}"
+            ItemsSource="{Binding Commits}"
+            SelectedItem="{Binding SelectedCommit, Mode=TwoWay}"
+            ToolTip.Tip="Выберите коммит">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="models:GitCommitInfo">
+                    <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <ListBox
+            Grid.Row="2"
+            MaxHeight="220"
+            IsVisible="{Binding HasRepository}"
+            ItemsSource="{Binding Files}"
+            SelectedItem="{Binding SelectedFile, Mode=TwoWay}"
+            ToolTip.Tip="Файлы, изменённые в коммите">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="models:GitFileChange">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding Status}" Classes="settings-label" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Path}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Border
+            Grid.Row="3"
+            Classes="settings-card"
+            IsVisible="{Binding HasRepository}"
+            Padding="8">
+            <controls:DiffView Diff="{Binding Diff}" />
+        </Border>
+    </Grid>
+</UserControl>

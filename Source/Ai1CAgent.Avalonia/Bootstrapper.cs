@@ -73,6 +73,7 @@ public sealed class Bootstrapper
         services.AddSingleton<ISkillStore, FileSkillStore>();
         services.AddSingleton<ISkillToolProvider, SkillToolProvider>();
         services.AddSingleton<IDeveloperToolProvider, DeveloperToolProvider>();
+        services.AddSingleton<IGitDiffService, GitDiffService>();
         services.AddSingleton<IEmbeddedSkills, EmbeddedSkills>();
         services.AddSingleton<IUiStateStore, JsonUiStateStore>();
         services.AddSingleton<IAppSettingsStore, JsonAppSettingsStore>();
@@ -88,6 +89,7 @@ public sealed class Bootstrapper
         services.AddSingleton<IAiChatService, AiChatService>();
         services.AddSingleton<ProjectsViewModel>();
         services.AddSingleton<SkillsViewModel>();
+        services.AddSingleton<ChangesViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<MainViewModel>();
     }
