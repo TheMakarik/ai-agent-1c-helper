@@ -8,17 +8,10 @@ public static class EverythingMcpServer
     public const string Command = "npx";
     public const string EchoToolName = "echo";
 
-    public static McpOptions CreateOptions() => new()
+    public static McpServerSettings CreateSettings() => new()
     {
-        Servers =
-        [
-            new McpServerOptions
-            {
-                Name = "everything",
-                Transport = McpTransportType.Stdio,
-                Command = Command,
-                Arguments = ["-y", "@modelcontextprotocol/server-everything"],
-            },
-        ],
+        Transport = McpTransportType.Stdio,
+        Command = Command,
+        Arguments = "-y @modelcontextprotocol/server-everything",
     };
 }

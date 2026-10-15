@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Modules.Ai.Interfaces;
+using Ai1CAgent.Modules.Configuration.Interfaces;
 using Ai1CAgent.Modules.Mcp.Interfaces;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -11,11 +12,13 @@ namespace Ai1CAgent.Modules.Ai;
 public sealed class AiChatService(
     IChatClientFactory chatClientFactory,
     IMcpToolProvider mcpToolProvider,
+    IConfigurationToolProvider configurationToolProvider,
     ILogger<AiChatService> logger) : IAiChatService
 {
     public async Task<string> SendAsync(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
+        string? configurationPath,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(model);
@@ -24,7 +27,7 @@ public sealed class AiChatService(
         logger.LogInformation("Запрос к {Provider}/{Model}, сообщений: {Count}", model.ProviderKey, model.Name, messages.Count);
 
         var client = chatClientFactory.GetClient(model);
-        var chatOptions = await CreateChatOptionsAsync(cancellationToken).ConfigureAwait(false);
+        var chatOptions = await CreateChatOptionsAsync(configurationPath, cancellationToken).ConfigureAwait(false);
         var response = await client
             .GetResponseAsync(ToChatMessages(messages), chatOptions, cancellationToken)
             .ConfigureAwait(false);
@@ -35,6 +38,7 @@ public sealed class AiChatService(
     public async IAsyncEnumerable<AiChatChunk> StreamAsync(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
+        string? configurationPath,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(model);
@@ -43,7 +47,7 @@ public sealed class AiChatService(
         logger.LogInformation("Потоковый запрос к {Provider}/{Model}, сообщений: {Count}", model.ProviderKey, model.Name, messages.Count);
 
         var client = chatClientFactory.GetClient(model);
-        var chatOptions = await CreateChatOptionsAsync(cancellationToken).ConfigureAwait(false);
+        var chatOptions = await CreateChatOptionsAsync(configurationPath, cancellationToken).ConfigureAwait(false);
         var updates = client.GetStreamingResponseAsync(ToChatMessages(messages), chatOptions, cancellationToken);
 
         await foreach (var update in updates.ConfigureAwait(false))
@@ -59,14 +63,22 @@ public sealed class AiChatService(
         }
     }
 
-    private async Task<ChatOptions?> CreateChatOptionsAsync(CancellationToken cancellationToken)
+    private async Task<ChatOptions?> CreateChatOptionsAsync(string? configurationPath, CancellationToken cancellationToken)
     {
-        var tools = await mcpToolProvider.GetToolsAsync(cancellationToken).ConfigureAwait(false);
+        List<AITool> tools = [.. await mcpToolProvider.GetToolsAsync(cancellationToken).ConfigureAwait(false)];
+
+        if (!string.IsNullOrWhiteSpace(configurationPath))
+        {
+            if (Directory.Exists(configurationPath))
+                tools.AddRange(configurationToolProvider.GetTools(configurationPath));
+            else
+                logger.LogWarning("Папка выгрузки конфигурации не найдена, функции чтения не переданы: {Path}", configurationPath);
+        }
 
         if (tools.Count == 0)
             return null;
 
-        return new ChatOptions { Tools = [.. tools] };
+        return new ChatOptions { Tools = tools };
     }
 
     private static string ExtractReasoning(IEnumerable<AIContent> contents)

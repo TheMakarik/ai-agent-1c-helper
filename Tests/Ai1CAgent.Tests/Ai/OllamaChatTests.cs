@@ -1,4 +1,4 @@
-using Ai1CAgent.Core.Models;
+﻿using Ai1CAgent.Core.Models;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Tests.Infrastructure;
@@ -28,7 +28,7 @@ public sealed class OllamaChatTests : IDisposable
         var model = new AiModel(AiProvider.Ollama, modelName);
 
         // Act
-        var answer = await _systemUnderTests.SendAsync(model, ChatPrompts.Arithmetic, _timeout.Token);
+        var answer = await _systemUnderTests.SendAsync(model, ChatPrompts.Arithmetic, null, _timeout.Token);
 
         // Assert
         answer.Should().Contain("4");
@@ -44,7 +44,7 @@ public sealed class OllamaChatTests : IDisposable
         var model = new AiModel(AiProvider.Ollama, modelName);
 
         // Act
-        var chunks = await _systemUnderTests.StreamAsync(model, ChatPrompts.Arithmetic, _timeout.Token).ToListAsync();
+        var chunks = await _systemUnderTests.StreamAsync(model, ChatPrompts.Arithmetic, null, _timeout.Token).ToListAsync();
 
         // Assert
         string.Concat(chunks.Select(chunk => chunk.Text)).Should().Contain("4");
@@ -60,7 +60,7 @@ public sealed class OllamaChatTests : IDisposable
         var model = new AiModel(AiProvider.Ollama, modelName);
 
         // Act
-        var answer = await _systemUnderTests.SendAsync(model, ChatPrompts.History, _timeout.Token);
+        var answer = await _systemUnderTests.SendAsync(model, ChatPrompts.History, null, _timeout.Token);
 
         // Assert
         answer.Should().ContainEquivalentOf("Барсук");

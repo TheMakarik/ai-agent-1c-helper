@@ -6,9 +6,11 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Ai1CAgent.Avalonia.Services;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai.Interfaces;
+using Ai1CAgent.Modules.Configuration.Interfaces;
 using Ai1CAgent.Modules.Mcp.Interfaces;
 using Avalonia.Threading;
 using Microsoft.Extensions.Logging;
@@ -23,6 +25,10 @@ public sealed class MainViewModel : ViewModelBase
     private readonly IAiSettingsStore _settingsStore;
     private readonly IAiChatService _chatService;
     private readonly IMcpToolProvider _mcpToolProvider;
+    private readonly IMcpSettingsStore _mcpSettingsStore;
+    private readonly IConfigurationToolProvider _configurationToolProvider;
+    private readonly IConfigurationPathStore _configurationPathStore;
+    private readonly IFolderPickerService _folderPicker;
     private readonly ILogger<MainViewModel> _logger;
     private List<AiModel> _allModels = [];
     private ProviderPickerViewModel? _selectedChatProvider;
@@ -44,6 +50,10 @@ public sealed class MainViewModel : ViewModelBase
         IAiSettingsStore settingsStore,
         IAiChatService chatService,
         IMcpToolProvider mcpToolProvider,
+        IMcpSettingsStore mcpSettingsStore,
+        IConfigurationToolProvider configurationToolProvider,
+        IConfigurationPathStore configurationPathStore,
+        IFolderPickerService folderPicker,
         SettingsViewModel settings,
         ILogger<MainViewModel> logger)
     {
@@ -51,6 +61,10 @@ public sealed class MainViewModel : ViewModelBase
         _settingsStore = settingsStore;
         _chatService = chatService;
         _mcpToolProvider = mcpToolProvider;
+        _mcpSettingsStore = mcpSettingsStore;
+        _configurationToolProvider = configurationToolProvider;
+        _configurationPathStore = configurationPathStore;
+        _folderPicker = folderPicker;
         _logger = logger;
         Settings = settings;
         Title = aiOptions.Value.Title;
@@ -65,12 +79,13 @@ public sealed class MainViewModel : ViewModelBase
         ];
         _selectedSection = Sections[0];
 
-        _selectedDialog = new ChatDialogViewModel();
+        _selectedDialog = CreateDialogViewModel();
         Dialogs.Add(_selectedDialog);
 
         RefreshModels();
 
         settingsStore.SettingsChanged += (_, _) => Dispatcher.UIThread.Post(RefreshModels);
+        mcpSettingsStore.SettingsChanged += (_, _) => Dispatcher.UIThread.Post(OnMcpSettingsChanged);
 
         var canSend = Changed
             .Select(_ => CanSend())
@@ -86,6 +101,12 @@ public sealed class MainViewModel : ViewModelBase
 
         NewDialogCommand = ReactiveCommand.Create(CreateDialog);
         SelectChatModelCommand = ReactiveCommand.Create<AiModel>(SelectChatModel);
+
+        SelectConfigurationCommand = ReactiveCommand.CreateFromTask(SelectConfigurationAsync);
+        SelectConfigurationCommand.ThrownExceptions.Subscribe(ex =>
+            _logger.LogError(ex, "Не удалось выбрать папку выгрузки конфигурации"));
+
+        ClearConfigurationCommand = ReactiveCommand.Create(ClearConfiguration);
 
         ConfirmUnsavedChanges = new Interaction<Unit, bool>();
         ConfirmMcpUnavailable = new Interaction<Unit, bool>();
@@ -125,6 +146,9 @@ public sealed class MainViewModel : ViewModelBase
 
     public string McpStatusTooltip => _mcpStatus switch
     {
+        false when !_mcpSettingsStore.Get().IsConfigured =>
+            "1С MCP — сервер не настроен: укажите адрес или команду запуска в «Настройки» → «MCP». " +
+            "Нажмите, чтобы проверить соединение повторно.",
         true => "1С MCP — подключение к серверу 1С установлено: агент может работать с конфигурацией. " +
                 "Нажмите, чтобы проверить соединение повторно.",
         false => "1С MCP — подключения к серверу 1С нет: агент отвечает на вопросы, но не работает с 1С. " +
@@ -229,6 +253,10 @@ public sealed class MainViewModel : ViewModelBase
 
     public ReactiveCommand<AiModel, Unit> SelectChatModelCommand { get; }
 
+    public ReactiveCommand<Unit, Unit> SelectConfigurationCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> ClearConfigurationCommand { get; }
+
     public ReactiveCommand<Unit, bool> CheckMcpCommand { get; }
 
     private bool CanSend() => SelectedModel is not null && !string.IsNullOrWhiteSpace(Prompt);
@@ -325,10 +353,36 @@ public sealed class MainViewModel : ViewModelBase
         if (SelectedDialog.IsEmpty)
             return;
 
-        var dialog = new ChatDialogViewModel();
+        var dialog = CreateDialogViewModel();
         Dialogs.Insert(0, dialog);
         SelectedDialog = dialog;
     }
+
+    private ChatDialogViewModel CreateDialogViewModel()
+    {
+        var dialog = new ChatDialogViewModel();
+        var lastPath = _configurationPathStore.GetLastPath();
+
+        if (lastPath.Length > 0)
+            dialog.SetConfiguration(lastPath, _configurationToolProvider.IsConfigurationDump(lastPath));
+
+        return dialog;
+    }
+
+    private async Task SelectConfigurationAsync()
+    {
+        var dialog = SelectedDialog;
+        var startPath = dialog.HasConfiguration ? dialog.ConfigurationPath : _configurationPathStore.GetLastPath();
+        var path = await _folderPicker.PickFolderAsync("Папка выгрузки конфигурации 1С", startPath);
+
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+
+        dialog.SetConfiguration(path, _configurationToolProvider.IsConfigurationDump(path));
+        await _configurationPathStore.SaveLastPathAsync(path);
+    }
+
+    private void ClearConfiguration() => SelectedDialog.SetConfiguration(string.Empty, isConfigurationDump: false);
 
     private async Task SendAsync(CancellationToken cancellationToken)
     {
@@ -353,7 +407,7 @@ public sealed class MainViewModel : ViewModelBase
 
         try
         {
-            await foreach (var chunk in _chatService.StreamAsync(SelectedModel, history, cancellationToken))
+            await foreach (var chunk in _chatService.StreamAsync(SelectedModel, history, dialog.ConfigurationPath, cancellationToken))
             {
                 if (chunk.Text.Length > 0 || chunk.Reasoning.Length > 0)
                 {
@@ -378,7 +432,7 @@ public sealed class MainViewModel : ViewModelBase
         if (await CheckMcpAsync())
             return true;
 
-        if (_mcpWarningShown)
+        if (_mcpWarningShown || !_mcpSettingsStore.Get().IsConfigured)
             return true;
 
         _mcpWarningShown = true;
@@ -400,6 +454,13 @@ public sealed class MainViewModel : ViewModelBase
             SetMcpStatus(false);
             return false;
         }
+    }
+
+    private void OnMcpSettingsChanged()
+    {
+        _mcpWarningShown = false;
+        SetMcpStatus(null);
+        _ = CheckMcpAsync();
     }
 
     private Task<bool> HandleMcpUnavailableAsync()

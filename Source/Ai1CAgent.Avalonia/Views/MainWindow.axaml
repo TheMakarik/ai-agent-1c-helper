@@ -20,6 +20,28 @@
 
     <Window.Styles>
 
+        <!--  Папка выгрузки конфигурации в шапке чата  -->
+        <Style Selector="Border.configuration-bar">
+            <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,4" />
+        </Style>
+
+        <Style Selector="TextBlock.configuration-path">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        </Style>
+
+        <Style Selector="TextBlock.configuration-hint">
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        </Style>
+
+        <Style Selector="TextBlock.configuration-warning">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+        </Style>
+
         <!--  Кнопка выбора ИИ в чате  -->
         <Style Selector="ToggleButton.model-picker">
             <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
@@ -314,10 +336,70 @@
             <Grid
                 Grid.Row="1"
                 IsVisible="{Binding IsChatSelected}"
-                RowDefinitions="*,Auto">
+                RowDefinitions="Auto,*,Auto">
+
+                <!--  Папка выгрузки конфигурации 1С текущего чата  -->
+                <Border
+                    Grid.Row="0"
+                    Margin="40,12,52,0"
+                    Classes="configuration-bar">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                        <ic:FluentIcon
+                            Grid.Column="0"
+                            Foreground="{StaticResource MutedTextBrush}"
+                            Icon="FolderOpen"
+                            IconSize="Size20"
+                            IconVariant="Regular"
+                            VerticalAlignment="Center" />
+                        <StackPanel
+                            Grid.Column="1"
+                            VerticalAlignment="Center">
+                            <TextBlock
+                                Classes="configuration-path"
+                                IsVisible="{Binding SelectedDialog.HasConfiguration}"
+                                Text="{Binding SelectedDialog.ConfigurationPath}"
+                                TextTrimming="CharacterEllipsis"
+                                ToolTip.Tip="{Binding SelectedDialog.ConfigurationPath}" />
+                            <TextBlock
+                                Classes="configuration-hint"
+                                IsVisible="{Binding !SelectedDialog.HasConfiguration}"
+                                Text="Папка выгрузки конфигурации не выбрана — агент не видит конфигурацию"
+                                TextTrimming="CharacterEllipsis" />
+                            <TextBlock
+                                Classes="configuration-warning"
+                                IsVisible="{Binding SelectedDialog.IsConfigurationWarningVisible}"
+                                Text="В папке нет Configuration.xml — это не выгрузка конфигурации («Конфигурация → Выгрузить конфигурацию в файлы»)"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button
+                            Grid.Column="2"
+                            Classes="icon-button"
+                            Command="{Binding SelectConfigurationCommand}"
+                            ToolTip.Tip="Выбрать папку выгрузки конфигурации 1С для этого чата"
+                            VerticalAlignment="Center">
+                            <ic:FluentIcon
+                                Icon="FolderSearch"
+                                IconSize="Size20"
+                                IconVariant="Regular" />
+                        </Button>
+                        <Button
+                            Grid.Column="3"
+                            Classes="icon-button"
+                            Command="{Binding ClearConfigurationCommand}"
+                            IsVisible="{Binding SelectedDialog.HasConfiguration}"
+                            ToolTip.Tip="Отвязать папку от этого чата"
+                            VerticalAlignment="Center">
+                            <ic:FluentIcon
+                                Icon="Dismiss"
+                                IconSize="Size20"
+                                IconVariant="Regular" />
+                        </Button>
+                    </Grid>
+                </Border>
+
                 <ScrollViewer
                     x:Name="MessagesScrollViewer"
-                    Grid.Row="0">
+                    Grid.Row="1">
                     <ItemsControl
                         Margin="64,24,52,24"
                         ItemsSource="{Binding SelectedDialog.Messages}">
@@ -405,7 +487,7 @@
                 </ScrollViewer>
 
                 <Border
-                    Grid.Row="1"
+                    Grid.Row="2"
                     Margin="40,0,52,16"
                     Classes="input">
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">

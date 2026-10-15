@@ -14,6 +14,8 @@ public sealed class ChatDialogViewModel : ViewModelBase
     private static readonly TimeSpan ThinkingTickInterval = TimeSpan.FromMilliseconds(320);
 
     private string _title = "Новый диалог";
+    private string _configurationPath = string.Empty;
+    private bool _isConfigurationDump;
     private DispatcherTimer? _thinkingTimer;
     private AiTokenUsage? _usage;
 
@@ -21,6 +23,22 @@ public sealed class ChatDialogViewModel : ViewModelBase
     {
         get => _title;
         private set => this.RaiseAndSetIfChanged(ref _title, value);
+    }
+
+    public string ConfigurationPath => _configurationPath;
+
+    public bool HasConfiguration => _configurationPath.Length > 0;
+
+    public bool IsConfigurationWarningVisible => HasConfiguration && !_isConfigurationDump;
+
+    public void SetConfiguration(string path, bool isConfigurationDump)
+    {
+        _configurationPath = path;
+        _isConfigurationDump = isConfigurationDump;
+
+        this.RaisePropertyChanged(nameof(ConfigurationPath));
+        this.RaisePropertyChanged(nameof(HasConfiguration));
+        this.RaisePropertyChanged(nameof(IsConfigurationWarningVisible));
     }
 
     public ObservableCollection<ChatMessageViewModel> Messages { get; } = [];
