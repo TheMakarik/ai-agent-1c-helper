@@ -1,4 +1,4 @@
-using Ai1CAgent.Core.Models;
+﻿using Ai1CAgent.Core.Models;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Modules.Mcp;
@@ -27,7 +27,7 @@ public sealed class McpChatTests : IAsyncDisposable
     public McpChatTests()
     {
         _mcpToolProvider = new McpToolProvider(
-            FakeOptions.Create(EverythingMcpServer.CreateOptions()),
+            new FakeMcpSettingsStore(EverythingMcpServer.CreateSettings()),
             NullLoggerFactory.Instance,
             A.Dummy<ILogger<McpToolProvider>>());
     }

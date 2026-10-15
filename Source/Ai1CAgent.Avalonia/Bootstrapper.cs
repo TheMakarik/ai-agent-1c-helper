@@ -53,14 +53,11 @@ public sealed class Bootstrapper
         builder.Services
             .AddOptions<AiOptions>()
             .Bind(builder.Configuration.GetSection(nameof(AiOptions)));
-
-        builder.Services
-            .AddOptions<McpOptions>()
-            .Bind(builder.Configuration.GetSection(nameof(McpOptions)));
     }
 
     private static void RegisterServices(IServiceCollection services)
     {
+        services.AddSingleton<IMcpSettingsStore, McpSettingsStore>();
         services.AddSingleton<IMcpToolProvider, McpToolProvider>();
         services.AddSingleton<ISecretProtector, AesGcmSecretProtector>();
         services.AddSingleton<IAiSettingsStore, AiSettingsStore>();

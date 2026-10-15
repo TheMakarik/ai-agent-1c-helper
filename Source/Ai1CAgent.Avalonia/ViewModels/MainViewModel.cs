@@ -23,6 +23,7 @@ public sealed class MainViewModel : ViewModelBase
     private readonly IAiSettingsStore _settingsStore;
     private readonly IAiChatService _chatService;
     private readonly IMcpToolProvider _mcpToolProvider;
+    private readonly IMcpSettingsStore _mcpSettingsStore;
     private readonly ILogger<MainViewModel> _logger;
     private List<AiModel> _allModels = [];
     private ProviderPickerViewModel? _selectedChatProvider;
@@ -44,6 +45,7 @@ public sealed class MainViewModel : ViewModelBase
         IAiSettingsStore settingsStore,
         IAiChatService chatService,
         IMcpToolProvider mcpToolProvider,
+        IMcpSettingsStore mcpSettingsStore,
         SettingsViewModel settings,
         ILogger<MainViewModel> logger)
     {
@@ -51,6 +53,7 @@ public sealed class MainViewModel : ViewModelBase
         _settingsStore = settingsStore;
         _chatService = chatService;
         _mcpToolProvider = mcpToolProvider;
+        _mcpSettingsStore = mcpSettingsStore;
         _logger = logger;
         Settings = settings;
         Title = aiOptions.Value.Title;
@@ -71,6 +74,7 @@ public sealed class MainViewModel : ViewModelBase
         RefreshModels();
 
         settingsStore.SettingsChanged += (_, _) => Dispatcher.UIThread.Post(RefreshModels);
+        mcpSettingsStore.SettingsChanged += (_, _) => Dispatcher.UIThread.Post(OnMcpSettingsChanged);
 
         var canSend = Changed
             .Select(_ => CanSend())
@@ -86,7 +90,6 @@ public sealed class MainViewModel : ViewModelBase
 
         NewDialogCommand = ReactiveCommand.Create(CreateDialog);
         SelectChatModelCommand = ReactiveCommand.Create<AiModel>(SelectChatModel);
-
         ConfirmUnsavedChanges = new Interaction<Unit, bool>();
         ConfirmMcpUnavailable = new Interaction<Unit, bool>();
 
@@ -125,6 +128,9 @@ public sealed class MainViewModel : ViewModelBase
 
     public string McpStatusTooltip => _mcpStatus switch
     {
+        false when !_mcpSettingsStore.Get().IsConfigured =>
+            "1С MCP — сервер не настроен: укажите адрес или команду запуска в «Настройки» → «MCP». " +
+            "Нажмите, чтобы проверить соединение повторно.",
         true => "1С MCP — подключение к серверу 1С установлено: агент может работать с конфигурацией. " +
                 "Нажмите, чтобы проверить соединение повторно.",
         false => "1С MCP — подключения к серверу 1С нет: агент отвечает на вопросы, но не работает с 1С. " +
@@ -228,7 +234,6 @@ public sealed class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> NewDialogCommand { get; }
 
     public ReactiveCommand<AiModel, Unit> SelectChatModelCommand { get; }
-
     public ReactiveCommand<Unit, bool> CheckMcpCommand { get; }
 
     private bool CanSend() => SelectedModel is not null && !string.IsNullOrWhiteSpace(Prompt);
@@ -372,7 +377,7 @@ public sealed class MainViewModel : ViewModelBase
         if (await CheckMcpAsync())
             return true;
 
-        if (_mcpWarningShown)
+        if (_mcpWarningShown || !_mcpSettingsStore.Get().IsConfigured)
             return true;
 
         _mcpWarningShown = true;
@@ -394,6 +399,13 @@ public sealed class MainViewModel : ViewModelBase
             SetMcpStatus(false);
             return false;
         }
+    }
+
+    private void OnMcpSettingsChanged()
+    {
+        _mcpWarningShown = false;
+        SetMcpStatus(null);
+        _ = CheckMcpAsync();
     }
 
     private Task<bool> HandleMcpUnavailableAsync()

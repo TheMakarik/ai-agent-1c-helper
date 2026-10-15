@@ -10,5 +10,6 @@ public static class AppDataPaths
 
     public static string SettingsFile { get; } = Path.Join(Directory, "ai-providers.json");
 
+    public static string McpSettingsFile { get; } = Path.Join(Directory, "mcp-server.json");
     public static string SecretKeyFile { get; } = Path.Join(Directory, "secret.key");
 }
