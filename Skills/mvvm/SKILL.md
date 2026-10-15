@@ -1,3 +1,8 @@
+---
+name: mvvm
+description: MVVM с ReactiveUI в Avalonia: во ViewModel нельзя кидать View (не создавать окна, не вызывать ShowDialog). Используй Interactions и/или UI-сервисные абстракции для связи VM→View; RegisterHandler только в code-behind View.
+---
+
 # Skill: mvvm
 
 # MVVM-паттерн с ReactiveUI и Avalonia (Interactions)

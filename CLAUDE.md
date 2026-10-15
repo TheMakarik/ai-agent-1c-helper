@@ -15,7 +15,9 @@
 - `Skills/dependency-injection/SKILL.md` — ручная регистрация в DI без Scrutor, lifetime и конструкторная инъекция.
 - `Skills/error-handling/SKILL.md` — обработка исключений, границы, `ThrownExceptions`, валидация аргументов.
 - `Skills/logging/SKILL.md` — Serilog: конфиг из `appsettings.json`, `ILogger<T>`, структурированные логи.
+- `Skills/macos/SKILL.md` — работа на macOS: сложные темы эскалировать к Макару, тестировать абсолютно всё.
 - `Skills/mvvm/SKILL.md` — MVVM в ReactiveUI/Avalonia: запрет вью в ViewModel, Interactions и UI-сервисы.
 - `Skills/options/SKILL.md` — настройка `IOptions` из `appsettings.json`.
+- `Skills/paths/SKILL.md` — всегда `Path.Join` вместо `Path.Combine` (во всех слоях).
 - `Skills/testing/SKILL.md` — тесты на xUnit, FakeItEasy, FluentAssertions, AutoFixture.
 - `Skills/xaml/SKILL.md` — разработка XAML/AXAML в Avalonia.
