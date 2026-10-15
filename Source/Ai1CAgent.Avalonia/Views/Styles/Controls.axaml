@@ -111,6 +111,50 @@
         <Setter Property="MinHeight" Value="44" />
     </Style>
 
+    <!--  Размышления модели: шапка «Думает...» и раскрываемый текст  -->
+    <Style Selector="ToggleButton.thought">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <Style Selector="ToggleButton.thought /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style Selector="ToggleButton.thought:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource TopBarSelectedBrush}" />
+    </Style>
+
+    <Style Selector="ToggleButton.thought:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource TopBarBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.thought-title">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+    </Style>
+
+    <Style Selector="Border.thought-body">
+        <Setter Property="Background" Value="{StaticResource TopBarBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="10,8" />
+    </Style>
+
+    <Style Selector="SelectableTextBlock.thought-text">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="LineHeight" Value="18" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+    </Style>
+
     <!--  Хвостик пузыря: заливка закрывает нижнюю линию рамки, обводка дорисовывает две стороны  -->
     <Style Selector="Panel.tail">
         <Setter Property="Width" Value="12" />

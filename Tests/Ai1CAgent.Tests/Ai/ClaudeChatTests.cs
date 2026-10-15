@@ -44,7 +44,7 @@ public sealed class ClaudeChatTests : IDisposable
         var chunks = await _systemUnderTests.StreamAsync(model, ChatPrompts.Arithmetic, _timeout.Token).ToListAsync();
 
         // Assert
-        string.Concat(chunks).Should().Contain("4");
+        string.Concat(chunks.Select(chunk => chunk.Text)).Should().Contain("4");
     }
 
     [SkippableFact]

@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Text;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Mcp.Interfaces;
@@ -31,7 +32,7 @@ public sealed class AiChatService(
         return response.Text;
     }
 
-    public async IAsyncEnumerable<string> StreamAsync(
+    public async IAsyncEnumerable<AiChatChunk> StreamAsync(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -47,10 +48,13 @@ public sealed class AiChatService(
 
         await foreach (var update in updates.ConfigureAwait(false))
         {
-            if (string.IsNullOrEmpty(update.Text))
+            var text = update.Text;
+            var reasoning = ExtractReasoning(update.Contents);
+
+            if (text.Length == 0 && reasoning.Length == 0)
                 continue;
 
-            yield return update.Text;
+            yield return new AiChatChunk(text, reasoning);
         }
     }
 
@@ -62,6 +66,22 @@ public sealed class AiChatService(
             return null;
 
         return new ChatOptions { Tools = [.. tools] };
+    }
+
+    private static string ExtractReasoning(IEnumerable<AIContent> contents)
+    {
+        StringBuilder? builder = null;
+
+        foreach (var content in contents)
+        {
+            if (content is not TextReasoningContent { Text: { Length: > 0 } text })
+                continue;
+
+            builder ??= new StringBuilder();
+            builder.Append(text);
+        }
+
+        return builder?.ToString() ?? string.Empty;
     }
 
     private static List<ChatMessage> ToChatMessages(IReadOnlyCollection<AiChatMessage> messages)

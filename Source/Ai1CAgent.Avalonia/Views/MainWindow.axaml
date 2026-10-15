@@ -6,6 +6,7 @@
     xmlns:converters="using:Ai1CAgent.Avalonia.Views.Converters"
     xmlns:ic="using:FluentIcons.Avalonia"
     xmlns:models="using:Ai1CAgent.Core.Models"
+    xmlns:controls="using:Ai1CAgent.Avalonia.Views.Controls"
     xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels"
     xmlns:views="using:Ai1CAgent.Avalonia.Views"
     Width="1040"
@@ -101,60 +102,61 @@
 
         <!--  Индикатор подключения к 1С MCP  -->
         <Style Selector="Button.status-mcp">
-            <Setter Property="Height" Value="24" />
-            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="8,0" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="CornerRadius" Value="13" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="{StaticResource SidebarHeaderBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource SidebarHeaderBrush}" />
+            <Setter Property="Background" Value="Transparent" />
         </Style>
 
-        <Style Selector="Button.status-mcp.ok">
+        <Style Selector="Border.status-mcp-dot">
+            <Setter Property="Width" Value="14" />
+            <Setter Property="Height" Value="14" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="{StaticResource SidebarHeaderBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="Border.status-mcp-dot.ok">
             <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}" />
         </Style>
 
-        <Style Selector="Button.status-mcp.fail">
+        <Style Selector="Border.status-mcp-dot.fail">
             <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ErrorBrush}" />
         </Style>
 
-        <Style Selector="Button.status-mcp /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Foreground" Value="White" />
+        <Style Selector="TextBlock.status-mcp-label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource SidebarHeaderBrush}" />
         </Style>
 
         <Style Selector="Button.status-mcp.ok /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+            <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
         </Style>
 
-        <Style Selector="Button.status-mcp.fail /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
+        <Style Selector="Button.status-mcp /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="13" />
         </Style>
 
         <Style Selector="Button.status-mcp:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource SidebarHeaderBrush}" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
         </Style>
 
-        <Style Selector="Button.status-mcp.ok:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-
-        <Style Selector="Button.status-mcp.fail:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-
-        <Style Selector="Button.status-mcp:pointerover">
-            <Setter Property="Opacity" Value="0.88" />
-        </Style>
-
-        <Style Selector="Button.status-mcp:pressed">
-            <Setter Property="Opacity" Value="0.75" />
+        <Style Selector="Button.status-mcp:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
         </Style>
 
     </Window.Styles>
@@ -167,7 +169,7 @@
             Background="{StaticResource SidebarBrush}">
             <Grid
                 Margin="12,8,12,12"
-                RowDefinitions="Auto,Auto,Auto,*"
+                RowDefinitions="Auto,Auto,Auto,*,Auto"
                 RowSpacing="8">
                 <StackPanel
                     Grid.Row="0"
@@ -215,12 +217,35 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+
+                <Button
+                    Grid.Row="4"
+                    Classes="status-mcp"
+                    Classes.checking="{Binding IsMcpChecking}"
+                    Classes.ok="{Binding IsMcpAvailable}"
+                    Classes.fail="{Binding IsMcpUnavailable}"
+                    Command="{Binding CheckMcpCommand}"
+                    HorizontalAlignment="Left"
+                    ToolTip.Tip="{Binding McpStatusTooltip}">
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Border
+                            Classes="status-mcp-dot"
+                            Classes.fail="{Binding IsMcpUnavailable}"
+                            Classes.ok="{Binding IsMcpAvailable}" />
+                        <TextBlock
+                            Classes="status-mcp-label"
+                            VerticalAlignment="Center"
+                            Text="1C MCP" />
+                    </StackPanel>
+                </Button>
             </Grid>
         </Border>
 
         <Grid
             Grid.Column="1"
-            RowDefinitions="Auto,*,Auto">
+            RowDefinitions="Auto,*">
 
             <!--  Верхнее меню разделов  -->
             <Border
@@ -284,9 +309,57 @@
                                     <Border
                                         Grid.Row="0"
                                         Classes="bubble">
-                                        <SelectableTextBlock
-                                            Text="{Binding Text}"
-                                            TextWrapping="Wrap" />
+                                        <StackPanel Spacing="10">
+                                            <StackPanel IsVisible="{Binding IsReasoningVisible}" Spacing="6">
+                                                <ToggleButton
+                                                    Classes="thought"
+                                                    HorizontalAlignment="Left"
+                                                    IsChecked="{Binding IsReasoningExpanded}"
+                                                    ToolTip.Tip="Размышления модели. Нажмите, чтобы раскрыть или скрыть">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <ic:FluentIcon
+                                                            Icon="BrainCircuit"
+                                                            IconSize="Size16"
+                                                            IconVariant="Regular" />
+                                                        <TextBlock
+                                                            Classes="thought-title"
+                                                            Text="{Binding ReasoningTitle}"
+                                                            VerticalAlignment="Center" />
+                                                        <ic:FluentIcon
+                                                            Icon="ChevronDown"
+                                                            IconSize="Size12"
+                                                            IconVariant="Regular"
+                                                            IsVisible="{Binding IsReasoningExpanded}" />
+                                                        <ic:FluentIcon
+                                                            Icon="ChevronRight"
+                                                            IconSize="Size12"
+                                                            IconVariant="Regular"
+                                                            IsVisible="{Binding !IsReasoningExpanded}" />
+                                                    </StackPanel>
+                                                </ToggleButton>
+
+                                                <Border Classes="thought-body" IsVisible="{Binding IsReasoningBodyVisible}">
+                                                    <ScrollViewer
+                                                        MaxHeight="320"
+                                                        HorizontalScrollBarVisibility="Disabled"
+                                                        VerticalScrollBarVisibility="Auto">
+                                                        <SelectableTextBlock
+                                                            Classes="thought-text"
+                                                            Text="{Binding Reasoning}"
+                                                            TextWrapping="Wrap" />
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </StackPanel>
+
+                                            <SelectableTextBlock
+                                                Text="{Binding Text}"
+                                                TextWrapping="Wrap"
+                                                IsVisible="{Binding IsUser}" />
+
+                                            <controls:MarkdownView
+                                                Markdown="{Binding Text}"
+                                                IsVisible="{Binding !IsUser}" />
+                                        </StackPanel>
                                     </Border>
                                     <Panel
                                         Grid.Row="1"
@@ -371,38 +444,6 @@
                     <Run Text=" — раздел в разработке" />
                 </TextBlock>
             </StackPanel>
-
-            <!--  Статусная строка: подключение к 1С MCP  -->
-            <Border
-                Grid.Row="2"
-                Height="36"
-                Padding="16,0"
-                Background="{StaticResource SidebarBrush}"
-                BorderBrush="{StaticResource BorderLineBrush}"
-                BorderThickness="0,1,0,0">
-                <Grid ColumnDefinitions="*,Auto">
-                    <Button
-                        Grid.Column="1"
-                        Classes="status-mcp"
-                        Classes.checking="{Binding IsMcpChecking}"
-                        Classes.ok="{Binding IsMcpAvailable}"
-                        Classes.fail="{Binding IsMcpUnavailable}"
-                        Command="{Binding CheckMcpCommand}"
-                        ToolTip.Tip="{Binding McpStatusTooltip}">
-                        <StackPanel
-                            Orientation="Horizontal"
-                            Spacing="6">
-                            <ic:FluentIcon
-                                Icon="Server"
-                                IconSize="Size16"
-                                IconVariant="Regular" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="1C MCP" />
-                        </StackPanel>
-                    </Button>
-                </Grid>
-            </Border>
         </Grid>
 
         <!--  Меню выбора ИИ: провайдеры + модели  -->

@@ -349,17 +349,20 @@ public sealed class MainViewModel : ViewModelBase
         dialog.AddMessage(AiChatRole.User, text);
         var history = dialog.ToAiMessages();
 
+        ChatMessageViewModel? answer = null;
+
         try
         {
-            ChatMessageViewModel? answer = null;
             await foreach (var chunk in _chatService.StreamAsync(SelectedModel, history, cancellationToken))
             {
-                answer ??= dialog.AddMessage(AiChatRole.Assistant, string.Empty);
-                answer.Text += chunk;
+                answer ??= dialog.AddStreamingMessage();
+                answer.AppendReasoning(chunk.Reasoning);
+                answer.AppendText(chunk.Text);
             }
         }
         finally
         {
+            answer?.FinishThinking();
             _ = CheckMcpAsync();
         }
     }

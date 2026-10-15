@@ -9,7 +9,7 @@ public interface IAiChatService
         IReadOnlyCollection<AiChatMessage> messages,
         CancellationToken cancellationToken);
 
-    IAsyncEnumerable<string> StreamAsync(
+    IAsyncEnumerable<AiChatChunk> StreamAsync(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
         CancellationToken cancellationToken);
