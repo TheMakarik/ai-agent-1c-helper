@@ -53,6 +53,49 @@ Views/
     Spacing="12">
 ```
 
+## Иконки (FluentIcons)
+
+Стек иконок — `FluentIcons.Avalonia`, namespace `using:FluentIcons.Avalonia`.
+
+```xml
+xmlns:ic="using:FluentIcons.Avalonia"
+
+<ic:FluentIcon Icon="Add" IconVariant="Regular" IconSize="Size20" />
+<ic:SymbolIcon Symbol="FolderOpen" />
+```
+
+### Обязательные правила
+- **Каждый элемент меню обязан содержать иконку** (`Menu`, `MenuItem`, `ContextMenu`, выпадающие пункты, тулбар-пункты). Только текста недостаточно.
+- **Каждая кнопка обязана содержать иконку** (`Button`, `ToggleButton`, `RepeatButton` и т.п.):
+  - обычные кнопки — иконка **вместе с текстом**;
+  - маленькие (иконочные) кнопки размером ~32×32 — **только иконка, без текста**.
+
+```xml
+<!-- Хорошо — пункт меню с иконкой -->
+<MenuItem Header="Открыть">
+    <MenuItem.Icon>
+        <ic:SymbolIcon Symbol="FolderOpen" />
+    </MenuItem.Icon>
+</MenuItem>
+
+<!-- Хорошо — кнопка: иконка + текст -->
+<Button Command="{Binding AddCommand}">
+    <StackPanel Orientation="Horizontal" Spacing="8">
+        <ic:FluentIcon Icon="Add" IconVariant="Regular" IconSize="Size20" />
+        <TextBlock VerticalAlignment="Center" Text="Добавить" />
+    </StackPanel>
+</Button>
+
+<!-- Хорошо — маленькая иконочная кнопка: только иконка -->
+<Button Classes="icon-button" Width="32" Height="32" Padding="0">
+    <ic:FluentIcon Icon="Play" IconVariant="Regular" IconSize="Size20" />
+</Button>
+
+<!-- Плохо — кнопка/пункт меню без иконки -->
+<Button Content="Добавить" />
+<MenuItem Header="Открыть" />
+```
+
 ## Использование стилей
 Выноси повторяющуюся логику в стили:
 
@@ -74,7 +117,7 @@ Views/
 ### Использование
 ```xml
 <Button Classes="icon-button run-button" Command="{Binding ExecuteCodeCommand}">
-    <materialIcons:MaterialIcon Kind="Play" />
+    <ic:FluentIcon Icon="Play" IconVariant="Regular" IconSize="Size20" />
 </Button>
 ```
 
