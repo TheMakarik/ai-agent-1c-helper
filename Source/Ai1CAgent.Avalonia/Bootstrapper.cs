@@ -1,14 +1,17 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Ai1CAgent.Avalonia.Services;
 using Ai1CAgent.Avalonia.ViewModels;
+using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Configuration;
 using Ai1CAgent.Modules.Configuration.Interfaces;
-using Ai1CAgent.Modules.Mcp;
-using Ai1CAgent.Modules.Mcp.Interfaces;
+using Ai1CAgent.Modules.Context;
+using Ai1CAgent.Modules.Context.Interfaces;
+using Ai1CAgent.Modules.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -43,6 +46,7 @@ public sealed class Bootstrapper
         var host = builder.Build();
 
         await host.StartAsync();
+        await host.Services.GetRequiredService<Database>().InitializeAsync(CancellationToken.None);
 
         return host;
     }
@@ -62,14 +66,17 @@ public sealed class Bootstrapper
     {
         services.AddSingleton<IConfigurationToolProvider, ConfigurationToolProvider>();
         services.AddSingleton<IConfigurationPathStore, ConfigurationPathStore>();
+        services.AddSingleton(new Database());
+        services.AddSingleton<IChatStore, SqliteChatStore>();
+        services.AddSingleton<IProjectStore, SqliteProjectStore>();
+        services.AddSingleton<IProjectContextToolProvider, ProjectContextToolProvider>();
         services.AddSingleton<IFolderPickerService, AvaloniaFolderPickerService>();
-        services.AddSingleton<IMcpSettingsStore, McpSettingsStore>();
-        services.AddSingleton<IMcpToolProvider, McpToolProvider>();
         services.AddSingleton<ISecretProtector, AesGcmSecretProtector>();
         services.AddSingleton<IAiSettingsStore, AiSettingsStore>();
         services.AddSingleton<IChatClientFactory, ChatClientFactory>();
         services.AddSingleton<IAiModelCatalog, AiModelCatalog>();
         services.AddSingleton<IAiChatService, AiChatService>();
+        services.AddSingleton<ProjectsViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<MainViewModel>();
     }

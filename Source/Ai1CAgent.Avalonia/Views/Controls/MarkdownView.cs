@@ -103,7 +103,19 @@ public sealed class MarkdownView : ContentControl
                 continue;
 
             editor.InstallTextMate(Registry).SetGrammar(scope);
+            RedrawAfterGrammar(editor);
         }
+    }
+
+    // Грамматика ставится после того, как Markdown.Avalonia уже отрисовал редактор,
+    // поэтому подсветка появляется только при следующем перерисовывании (например, при
+    // выделении текста). Принудительно перерисовываем, чтобы подсветка была сразу.
+    private static void RedrawAfterGrammar(TextEditor editor)
+    {
+        var textView = editor.TextArea.TextView;
+
+        textView.Redraw();
+        Dispatcher.UIThread.Post(textView.Redraw, DispatcherPriority.Background);
     }
 
     private static string[] ParseLanguages(string markdown)

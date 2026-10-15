@@ -1,8 +1,12 @@
 using System;
+using System.IO;
+using System.Reactive;
+using System.Threading;
 using System.Threading.Tasks;
 using Ai1CAgent.Avalonia.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Serilog;
 
@@ -14,7 +18,6 @@ public partial class MainWindow : Window
 
     private MainViewModel? _handlerViewModel;
     private TaskCompletionSource<bool>? _confirmationRequest;
-    private TaskCompletionSource<bool>? _mcpWarningRequest;
     private bool _closeConfirmed;
 
     public MainWindow()
@@ -35,16 +38,16 @@ public partial class MainWindow : Window
         viewModel.ConfirmUnsavedChanges.RegisterHandler(async context =>
             context.SetOutput(await ConfirmAsync()));
 
-        viewModel.ConfirmMcpUnavailable.RegisterHandler(async context =>
+        viewModel.OpenFolder.RegisterHandler(async context =>
         {
-            _mcpWarningRequest = new TaskCompletionSource<bool>();
-            viewModel.IsMcpWarningOpen = true;
+            if (Directory.Exists(context.Input))
+            {
+                var folder = await StorageProvider.TryGetFolderFromPathAsync(new Uri(Path.GetFullPath(context.Input)));
+                if (folder is not null)
+                    await Launcher.LaunchFileAsync(folder);
+            }
 
-            var proceed = await _mcpWarningRequest.Task;
-
-            viewModel.IsMcpWarningOpen = false;
-            _mcpWarningRequest = null;
-            context.SetOutput(proceed);
+            context.SetOutput(Unit.Default);
         });
     }
 
@@ -138,10 +141,6 @@ public partial class MainWindow : Window
 
     private void OnConfirmCancelClick(object? sender, RoutedEventArgs e) => CompleteConfirmation(false);
 
-    private void OnMcpContinueClick(object? sender, RoutedEventArgs e) => _mcpWarningRequest?.TrySetResult(true);
-
-    private void OnMcpCancelClick(object? sender, RoutedEventArgs e) => _mcpWarningRequest?.TrySetResult(false);
-
     private void OnMessagesScrollViewerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property != ScrollViewer.ExtentProperty || e.OldValue is not Size oldExtent)
@@ -151,5 +150,35 @@ public partial class MainWindow : Window
         var wasAtBottom = viewer.Offset.Y + viewer.Viewport.Height >= oldExtent.Height - StickToBottomThreshold;
         if (wasAtBottom)
             viewer.ScrollToEnd();
+    }
+
+    private void OnRenameDialogClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { DataContext: ChatDialogViewModel dialog } || DataContext is not MainViewModel viewModel)
+            return;
+
+        viewModel.BeginRenameDialog(dialog);
+    }
+
+    private async void OnDialogRenameKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is not Key.Enter)
+            return;
+
+        if (sender is not Control { DataContext: ChatDialogViewModel dialog } || DataContext is not MainViewModel viewModel)
+            return;
+
+        await viewModel.CommitRenameDialogAsync(dialog, CancellationToken.None);
+    }
+
+    private async void OnDialogRenameLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Control { DataContext: ChatDialogViewModel dialog } || DataContext is not MainViewModel viewModel)
+            return;
+
+        if (!dialog.IsRenaming)
+            return;
+
+        await viewModel.CommitRenameDialogAsync(dialog, CancellationToken.None);
     }
 }

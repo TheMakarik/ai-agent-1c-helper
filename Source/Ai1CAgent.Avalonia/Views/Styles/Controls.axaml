@@ -365,4 +365,23 @@
         <Setter Property="MaxDropDownHeight" Value="260" />
     </Style>
 
+    <!--  Контекстное меню чата: жёлтое, в цвет темы  -->
+    <Style Selector="ContextMenu.chat-menu">
+        <Setter Property="Background" Value="{StaticResource TopBarBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SidebarSelectedBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <Style Selector="ContextMenu.chat-menu MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <Style Selector="ContextMenu.chat-menu MenuItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
 </Styles>

@@ -1,0 +1,157 @@
+<UserControl
+    x:Class="Ai1CAgent.Avalonia.Views.ProjectsView"
+    x:DataType="vm:ProjectsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ic="using:FluentIcons.Avalonia"
+    xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels">
+
+    <UserControl.Styles>
+        <Style Selector="Border.project-card">
+            <Setter Property="Background" Value="{StaticResource BubbleBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderLineBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,12" />
+        </Style>
+
+        <Style Selector="Border.project-card.current">
+            <Setter Property="BorderBrush" Value="{StaticResource SidebarSelectedBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+
+        <Style Selector="TextBlock.project-missing">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <StackPanel
+            Margin="40,24,52,24"
+            Spacing="16">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock
+                    Classes="page-title"
+                    VerticalAlignment="Center"
+                    Text="Проекты" />
+                <Button
+                    Classes="settings-save"
+                    Command="{Binding AddProjectCommand}"
+                    ToolTip.Tip="Добавить проект — папку выгрузки конфигурации 1С">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ic:FluentIcon
+                            Icon="FolderAdd"
+                            IconSize="Size16"
+                            IconVariant="Regular" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="Добавить" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <TextBlock
+                Classes="page-subtitle"
+                Text="Проект — это папка выгрузки конфигурации 1С. Файлы индексируются, контекст проекта общий для всех его чатов. Путь изменить нельзя — только название." 
+                TextWrapping="Wrap" />
+
+            <TextBlock
+                Classes="page-subtitle"
+                IsVisible="{Binding !HasProjects}"
+                Text="Проектов пока нет. Добавьте папку выгрузки конфигурации 1С." />
+
+            <ItemsControl ItemsSource="{Binding Projects}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ProjectItemViewModel">
+                        <Border
+                            Margin="0,0,0,8"
+                            Classes="project-card"
+                            Classes.current="{Binding IsCurrent}">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                <ic:FluentIcon
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Icon="Folder"
+                                    IconSize="Size24"
+                                    IconVariant="Regular" />
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Spacing="2"
+                                    VerticalAlignment="Center">
+                                    <Panel>
+                                        <TextBlock
+                                            IsVisible="{Binding !IsRenaming}"
+                                            Text="{Binding Name}"
+                                            TextTrimming="CharacterEllipsis"
+                                            VerticalAlignment="Center" />
+                                        <TextBox
+                                            IsVisible="{Binding IsRenaming}"
+                                            KeyDown="OnRenameKeyDown"
+                                            LostFocus="OnRenameLostFocus"
+                                            Text="{Binding PendingName, Mode=TwoWay}" />
+                                    </Panel>
+                                    <TextBlock
+                                        Classes="page-subtitle"
+                                        Text="{Binding FolderStateText}"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTip.Tip="{Binding Path}" />
+                                    <TextBlock
+                                        Classes="project-missing"
+                                        IsVisible="{Binding IsFolderMissing}"
+                                        Text="Папка не найдена — проект нельзя выбрать" />
+                                </StackPanel>
+                                <StackPanel
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="4">
+                                    <Button
+                                        Classes="icon-button"
+                                        Command="{Binding $parent[ItemsControl].((vm:ProjectsViewModel)DataContext).SelectProjectCommand}"
+                                        CommandParameter="{Binding}"
+                                        IsEnabled="{Binding CanSelect}"
+                                        ToolTip.Tip="Выбрать проект">
+                                        <ic:FluentIcon
+                                            Icon="Checkmark"
+                                            IconSize="Size16"
+                                            IconVariant="Regular" />
+                                    </Button>
+                                    <Button
+                                        Classes="icon-button"
+                                        Click="OnBeginRenameClick"
+                                        ToolTip.Tip="Переименовать">
+                                        <ic:FluentIcon
+                                            Icon="Edit"
+                                            IconSize="Size16"
+                                            IconVariant="Regular" />
+                                    </Button>
+                                    <Button
+                                        Classes="icon-button"
+                                        Command="{Binding $parent[ItemsControl].((vm:ProjectsViewModel)DataContext).RefreshProjectCommand}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="Обновить индекс файлов проекта">
+                                        <ic:FluentIcon
+                                            Icon="ArrowSync"
+                                            IconSize="Size16"
+                                            IconVariant="Regular" />
+                                    </Button>
+                                    <Button
+                                        Classes="icon-button"
+                                        Command="{Binding $parent[ItemsControl].((vm:ProjectsViewModel)DataContext).DeleteProjectCommand}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="Удалить проект">
+                                        <ic:FluentIcon
+                                            Icon="Delete"
+                                            IconSize="Size16"
+                                            IconVariant="Regular" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai.Interfaces;
-using Ai1CAgent.Modules.Mcp.Interfaces;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
@@ -18,7 +17,6 @@ namespace Ai1CAgent.Avalonia.ViewModels;
 public sealed class SettingsViewModel : ViewModelBase
 {
     private readonly IAiSettingsStore _settingsStore;
-    private readonly IMcpSettingsStore _mcpSettingsStore;
     private readonly ILogger<SettingsViewModel> _logger;
     private ProviderSettingsViewModel? _selectedProvider;
     private string _newProviderName = string.Empty;
@@ -26,25 +24,17 @@ public sealed class SettingsViewModel : ViewModelBase
     private string _statusMessage = string.Empty;
     private bool _isSaving;
     private bool _isDirty;
-    private bool _isMcpDirty;
 
     public SettingsViewModel(
         IAiSettingsStore settingsStore,
-        IMcpSettingsStore mcpSettingsStore,
-        IMcpToolProvider mcpToolProvider,
         ILogger<SettingsViewModel> logger)
     {
         _settingsStore = settingsStore;
-        _mcpSettingsStore = mcpSettingsStore;
         _logger = logger;
 
         Providers = [];
         BuildProviders();
         _selectedProvider = Providers.FirstOrDefault();
-
-        Mcp = new McpSettingsViewModel(mcpToolProvider, logger);
-        Mcp.Load(_mcpSettingsStore.Get());
-        Mcp.Modified += OnMcpModified;
 
         var canSave = Changed
             .Select(_ => !IsSaving)
@@ -79,8 +69,6 @@ public sealed class SettingsViewModel : ViewModelBase
     }
 
     public ObservableCollection<ProviderSettingsViewModel> Providers { get; }
-
-    public McpSettingsViewModel Mcp { get; }
 
     public ProviderSettingsViewModel? SelectedProvider
     {
@@ -141,9 +129,7 @@ public sealed class SettingsViewModel : ViewModelBase
         BuildProviders();
         SelectedProvider = Providers.Count == 0 ? null : Providers[Math.Clamp(index, 0, Providers.Count - 1)];
         NewProviderName = string.Empty;
-        Mcp.Load(_mcpSettingsStore.Get());
         StatusMessage = string.Empty;
-        _isMcpDirty = false;
         IsDirty = false;
     }
 
@@ -200,12 +186,6 @@ public sealed class SettingsViewModel : ViewModelBase
 
     private void OnProviderModified(object? sender, EventArgs e) => IsDirty = true;
 
-    private void OnMcpModified(object? sender, EventArgs e)
-    {
-        _isMcpDirty = true;
-        IsDirty = true;
-    }
-
     private async Task SaveCoreAsync(CancellationToken cancellationToken)
     {
         IsSaving = true;
@@ -215,12 +195,6 @@ public sealed class SettingsViewModel : ViewModelBase
         {
             List<AiProviderSettings> settings = [.. Providers.Select(provider => provider.ToSettings())];
             await _settingsStore.SaveProvidersAsync(settings, cancellationToken);
-
-            if (_isMcpDirty)
-            {
-                await _mcpSettingsStore.SaveAsync(Mcp.ToSettings(), cancellationToken);
-                _isMcpDirty = false;
-            }
 
             IsDirty = false;
             StatusMessage = "Настройки сохранены";

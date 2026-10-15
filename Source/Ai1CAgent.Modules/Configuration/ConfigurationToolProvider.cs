@@ -46,6 +46,27 @@ public sealed class ConfigurationToolProvider(ILogger<ConfigurationToolProvider>
         }
         """;
 
+    private const string FindSchema = """
+        {
+          "type": "object",
+          "properties": {
+            "pattern": { "type": "string", "description": "Имя или маска файла, например *Module*.bsl или DataProcessors/*. По подстроке, если нет «*» и «?»." },
+            "path": { "type": "string", "description": "Папка поиска относительно корня выгрузки. Пусто — вся выгрузка." }
+          },
+          "required": ["pattern"]
+        }
+        """;
+
+    private const string InfoSchema = """
+        {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Файл относительно корня выгрузки." }
+          },
+          "required": ["path"]
+        }
+        """;
+
     public bool IsConfigurationDump(string path) => ConfigurationFolder.IsConfigurationDump(path);
 
     public IReadOnlyList<AITool> GetTools(string configurationPath)
@@ -77,6 +98,19 @@ public sealed class ConfigurationToolProvider(ILogger<ConfigurationToolProvider>
                     ConfigurationFunction.GetString(arguments, "query") ?? string.Empty,
                     ConfigurationFunction.GetString(arguments, "file_pattern"),
                     ConfigurationFunction.GetString(arguments, "path")))),
+            new ConfigurationFunction(
+                "find_files",
+                "Найти файлы в выгрузке конфигурации 1С по имени или маске пути. " + FolderHint,
+                FindSchema,
+                arguments => Log("find_files", () => folder.Find(
+                    ConfigurationFunction.GetString(arguments, "pattern") ?? string.Empty,
+                    ConfigurationFunction.GetString(arguments, "path")))),
+            new ConfigurationFunction(
+                "file_info",
+                "Метаданные файла выгрузки конфигурации 1С: размер и время изменения. " + FolderHint,
+                InfoSchema,
+                arguments => Log("file_info", () => folder.Info(
+                    ConfigurationFunction.GetString(arguments, "path") ?? string.Empty))),
         ];
     }
 

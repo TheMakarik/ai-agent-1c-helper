@@ -1,8 +1,9 @@
+using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Configuration;
-using Ai1CAgent.Modules.Mcp.Interfaces;
+using Ai1CAgent.Modules.Context;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -14,7 +15,6 @@ public static class ChatServiceBuilder
     public static (AiChatService Service, ChatClientFactory Factory) Build(
         OllamaOptions? ollamaOptions = null,
         AiOptions? aiOptions = null,
-        IMcpToolProvider? mcpToolProvider = null,
         IAiSettingsStore? settingsStore = null)
     {
         var factory = new ChatClientFactory(
@@ -26,8 +26,8 @@ public static class ChatServiceBuilder
 
         var service = new AiChatService(
             factory,
-            mcpToolProvider ?? EmptyMcpToolProvider.Create(),
             new ConfigurationToolProvider(A.Dummy<ILogger<ConfigurationToolProvider>>()),
+            new ProjectContextToolProvider(A.Dummy<IProjectStore>(), A.Dummy<ILogger<ProjectContextToolProvider>>()),
             A.Dummy<ILogger<AiChatService>>());
 
         return (service, factory);

@@ -122,69 +122,34 @@
             <Setter Property="Padding" Value="10,6" />
         </Style>
 
-        <!--  Индикатор подключения к 1С MCP  -->
-        <Style Selector="Button.status-mcp">
-            <Setter Property="Height" Value="26" />
-            <Setter Property="Padding" Value="8,0" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="13" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{StaticResource SidebarHeaderBrush}" />
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-
-        <Style Selector="Border.status-mcp-dot">
-            <Setter Property="Width" Value="14" />
-            <Setter Property="Height" Value="14" />
-            <Setter Property="CornerRadius" Value="7" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="BorderBrush" Value="{StaticResource SidebarHeaderBrush}" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
-
-        <Style Selector="Border.status-mcp-dot.ok">
-            <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}" />
-        </Style>
-
-        <Style Selector="Border.status-mcp-dot.fail">
-            <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource ErrorBrush}" />
-        </Style>
-
-        <Style Selector="TextBlock.status-mcp-label">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource SidebarHeaderBrush}" />
-        </Style>
-
         <Style Selector="TextBlock.status-context">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource SidebarHeaderBrush}" />
         </Style>
 
-        <Style Selector="Button.status-mcp.ok /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
-        </Style>
-
-        <Style Selector="Button.status-mcp /template/ ContentPresenter#PART_ContentPresenter">
+        <!--  Папка проекта внизу сайдбара  -->
+        <Style Selector="Button.project-folder">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="13" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
         </Style>
 
-        <Style Selector="Button.status-mcp:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Style Selector="Button.project-folder:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
         </Style>
 
-        <Style Selector="Button.status-mcp:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource SidebarSelectedBrush}" />
+        <Style Selector="Button.project-folder:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        </Style>
+
+        <!--  Выполняемый инструмент агента в сообщении  -->
+        <Style Selector="TextBlock.tool-activity">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
         </Style>
 
     </Window.Styles>
@@ -239,9 +204,29 @@
                     ToolTip.Tip="История диалогов">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:ChatDialogViewModel">
-                            <TextBlock
-                                Text="{Binding Title}"
-                                TextTrimming="CharacterEllipsis" />
+                            <Panel>
+                                <TextBlock
+                                    IsVisible="{Binding !IsRenaming}"
+                                    Text="{Binding Title}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBox
+                                    IsVisible="{Binding IsRenaming}"
+                                    KeyDown="OnDialogRenameKeyDown"
+                                    LostFocus="OnDialogRenameLostFocus"
+                                    Text="{Binding PendingTitle, Mode=TwoWay}" />
+                                <Panel.ContextMenu>
+                                    <ContextMenu Classes="chat-menu">
+                                        <MenuItem Click="OnRenameDialogClick" Header="Переименовать">
+                                            <MenuItem.Icon>
+                                                <ic:FluentIcon
+                                                    Icon="Edit"
+                                                    IconSize="Size16"
+                                                    IconVariant="Regular" />
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                    </ContextMenu>
+                                </Panel.ContextMenu>
+                            </Panel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -266,27 +251,30 @@
                         Text="{Binding SelectedDialog.ContextUsageText}" />
                 </StackPanel>
 
+                <!--  Папка активного проекта: иконка, ховер, открытие в проводнике  -->
                 <Button
                     Grid.Row="5"
-                    Classes="status-mcp"
-                    Classes.checking="{Binding IsMcpChecking}"
-                    Classes.ok="{Binding IsMcpAvailable}"
-                    Classes.fail="{Binding IsMcpUnavailable}"
-                    Command="{Binding CheckMcpCommand}"
-                    HorizontalAlignment="Left"
-                    ToolTip.Tip="{Binding McpStatusTooltip}">
-                    <StackPanel
-                        Orientation="Horizontal"
-                        Spacing="8">
-                        <Border
-                            Classes="status-mcp-dot"
-                            Classes.fail="{Binding IsMcpUnavailable}"
-                            Classes.ok="{Binding IsMcpAvailable}" />
-                        <TextBlock
-                            Classes="status-mcp-label"
+                    Margin="8,0,0,0"
+                    Padding="0,4"
+                    HorizontalAlignment="Stretch"
+                    Classes="project-folder"
+                    Command="{Binding OpenProjectFolderCommand}"
+                    CommandParameter="{Binding Projects.SelectedProject.Path}"
+                    IsVisible="{Binding Projects.HasSelection}"
+                    ToolTip.Tip="Показать папку">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <ic:FluentIcon
+                            Grid.Column="0"
                             VerticalAlignment="Center"
-                            Text="1C MCP" />
-                    </StackPanel>
+                            Icon="Folder"
+                            IconSize="Size16"
+                            IconVariant="Regular" />
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{Binding Projects.SelectedProject.Path}"
+                            TextWrapping="Wrap" />
+                    </Grid>
                 </Button>
             </Grid>
         </Border>
@@ -459,14 +447,43 @@
                                                 </Border>
                                             </StackPanel>
 
-                                            <SelectableTextBlock
-                                                Text="{Binding Text}"
-                                                TextWrapping="Wrap"
-                                                IsVisible="{Binding IsUser}" />
-
-                                            <controls:MarkdownView
-                                                Markdown="{Binding Text}"
-                                                IsVisible="{Binding !IsUser}" />
+                                            <ItemsControl ItemsSource="{Binding Blocks}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="6" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:MessageBlockViewModel">
+                                                        <Panel>
+                                                            <StackPanel
+                                                                Orientation="Horizontal"
+                                                                Spacing="4"
+                                                                IsVisible="{Binding IsTool}">
+                                                                <ic:FluentIcon
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{StaticResource TextBrush}"
+                                                                    Icon="Wrench"
+                                                                    IconSize="Size16"
+                                                                    IconVariant="Regular" />
+                                                                <TextBlock
+                                                                    Classes="tool-activity"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="{Binding ToolName}" />
+                                                            </StackPanel>
+                                                            <Panel IsVisible="{Binding !IsTool}">
+                                                                <SelectableTextBlock
+                                                                    Text="{Binding Text}"
+                                                                    TextWrapping="Wrap"
+                                                                    IsVisible="{Binding IsUser}" />
+                                                                <controls:MarkdownView
+                                                                    Markdown="{Binding Text}"
+                                                                    IsVisible="{Binding !IsUser}" />
+                                                            </Panel>
+                                                        </Panel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
 
                                             <TextBlock
                                                 Classes="message-time"
@@ -494,9 +511,12 @@
                         <TextBox
                             Grid.Column="0"
                             Classes="prompt"
+                            MaxLines="4"
+                            MinLines="1"
                             PlaceholderText="Напишите сообщение…"
                             Text="{Binding Prompt}"
                             TextWrapping="Wrap"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ToolTip.Tip="Введите сообщение, Enter — отправить">
                             <TextBox.KeyBindings>
                                 <KeyBinding
@@ -535,6 +555,11 @@
             <!--  Настройки нейросетей  -->
             <Panel Grid.Row="1" IsVisible="{Binding IsSettingsSelected}">
                 <views:SettingsView DataContext="{Binding Settings}" />
+            </Panel>
+
+            <!--  Проекты  -->
+            <Panel Grid.Row="1" IsVisible="{Binding IsProjectsSelected}">
+                <views:ProjectsView DataContext="{Binding Projects}" />
             </Panel>
 
             <!--  Заглушка для остальных разделов  -->
@@ -659,58 +684,6 @@
                             </StackPanel>
                         </Button>
                         <Button Classes="dialog-action" Click="OnConfirmCancelClick" ToolTip.Tip="Отменить переход и остаться в настройках">
-                            <StackPanel
-                                Orientation="Horizontal"
-                                Spacing="6">
-                                <ic:FluentIcon
-                                    Icon="Dismiss"
-                                    IconSize="Size16"
-                                    IconVariant="Regular" />
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    Text="Отмена" />
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Border>
-
-        <!--  Нет подключения к 1С MCP  -->
-        <Border
-            Grid.ColumnSpan="2"
-            Background="#99000000"
-            IsVisible="{Binding IsMcpWarningOpen}"
-            ZIndex="110">
-            <Border
-                Width="460"
-                Classes="settings-card"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-                <StackPanel Spacing="16">
-                    <TextBlock Classes="page-title" Text="Нет подключения к 1С MCP" />
-                    <TextBlock
-                        Classes="page-subtitle"
-                        Text="Не удалось подключиться к серверу 1С MCP. Агент сможет отвечать на вопросы, но не сможет работать с 1С. Хотите продолжить?"
-                        TextWrapping="Wrap" />
-                    <StackPanel
-                        HorizontalAlignment="Right"
-                        Orientation="Horizontal"
-                        Spacing="8">
-                        <Button Classes="settings-save" Click="OnMcpContinueClick">
-                            <StackPanel
-                                Orientation="Horizontal"
-                                Spacing="6">
-                                <ic:FluentIcon
-                                    Icon="Checkmark"
-                                    IconSize="Size16"
-                                    IconVariant="Regular" />
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    Text="Продолжить" />
-                            </StackPanel>
-                        </Button>
-                        <Button Classes="dialog-action" Click="OnMcpCancelClick">
                             <StackPanel
                                 Orientation="Horizontal"
                                 Spacing="6">

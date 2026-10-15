@@ -3,7 +3,7 @@ using System.Text;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Configuration.Interfaces;
-using Ai1CAgent.Modules.Mcp.Interfaces;
+using Ai1CAgent.Modules.Context.Interfaces;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -11,14 +11,15 @@ namespace Ai1CAgent.Modules.Ai;
 
 public sealed class AiChatService(
     IChatClientFactory chatClientFactory,
-    IMcpToolProvider mcpToolProvider,
     IConfigurationToolProvider configurationToolProvider,
+    IProjectContextToolProvider projectContextToolProvider,
     ILogger<AiChatService> logger) : IAiChatService
 {
     public async Task<string> SendAsync(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
         string? configurationPath,
+        long? projectId,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(model);
@@ -27,7 +28,7 @@ public sealed class AiChatService(
         logger.LogInformation("Запрос к {Provider}/{Model}, сообщений: {Count}", model.ProviderKey, model.Name, messages.Count);
 
         var client = chatClientFactory.GetClient(model);
-        var chatOptions = await CreateChatOptionsAsync(configurationPath, cancellationToken).ConfigureAwait(false);
+        var chatOptions = CreateChatOptions(configurationPath, projectId);
         var response = await client
             .GetResponseAsync(ToChatMessages(messages), chatOptions, cancellationToken)
             .ConfigureAwait(false);
@@ -39,6 +40,7 @@ public sealed class AiChatService(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
         string? configurationPath,
+        long? projectId,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(model);
@@ -47,7 +49,7 @@ public sealed class AiChatService(
         logger.LogInformation("Потоковый запрос к {Provider}/{Model}, сообщений: {Count}", model.ProviderKey, model.Name, messages.Count);
 
         var client = chatClientFactory.GetClient(model);
-        var chatOptions = await CreateChatOptionsAsync(configurationPath, cancellationToken).ConfigureAwait(false);
+        var chatOptions = CreateChatOptions(configurationPath, projectId);
         var updates = client.GetStreamingResponseAsync(ToChatMessages(messages), chatOptions, cancellationToken);
 
         await foreach (var update in updates.ConfigureAwait(false))
@@ -56,16 +58,20 @@ public sealed class AiChatService(
             var reasoning = ExtractReasoning(update.Contents);
             var usage = ExtractUsage(update.Contents);
 
-            if (text.Length == 0 && reasoning.Length == 0 && usage is null)
-                continue;
+            if (text.Length > 0 || reasoning.Length > 0 || usage is not null)
+                yield return new AiChatChunk(text, reasoning, usage);
 
-            yield return new AiChatChunk(text, reasoning, usage);
+            foreach (var content in update.Contents)
+            {
+                if (content is FunctionCallContent { Name: { Length: > 0 } name })
+                    yield return new AiChatChunk(string.Empty, string.Empty, null, name);
+            }
         }
     }
 
-    private async Task<ChatOptions?> CreateChatOptionsAsync(string? configurationPath, CancellationToken cancellationToken)
+    private ChatOptions? CreateChatOptions(string? configurationPath, long? projectId)
     {
-        List<AITool> tools = [.. await mcpToolProvider.GetToolsAsync(cancellationToken).ConfigureAwait(false)];
+        List<AITool> tools = [];
 
         if (!string.IsNullOrWhiteSpace(configurationPath))
         {
@@ -75,10 +81,10 @@ public sealed class AiChatService(
                 logger.LogWarning("Папка выгрузки конфигурации не найдена, функции чтения не переданы: {Path}", configurationPath);
         }
 
-        if (tools.Count == 0)
-            return null;
+        if (projectId is { } id)
+            tools.AddRange(projectContextToolProvider.GetTools(id));
 
-        return new ChatOptions { Tools = tools };
+        return tools.Count == 0 ? null : new ChatOptions { Tools = tools };
     }
 
     private static string ExtractReasoning(IEnumerable<AIContent> contents)

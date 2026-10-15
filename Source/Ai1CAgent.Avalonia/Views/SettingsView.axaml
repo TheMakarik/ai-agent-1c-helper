@@ -22,22 +22,6 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush" Value="{StaticResource SidebarSelectedBrush}" />
         </Style>
-
-        <Style Selector="TabItem.settings">
-            <Setter Property="FontSize" Value="15" />
-        </Style>
-
-        <Style Selector="TextBlock.mcp-check">
-            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
-        </Style>
-
-        <Style Selector="TextBlock.mcp-check.ok">
-            <Setter Property="Foreground" Value="{StaticResource SuccessBrush}" />
-        </Style>
-
-        <Style Selector="TextBlock.mcp-check.fail">
-            <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
-        </Style>
     </UserControl.Styles>
 
     <Grid
@@ -50,27 +34,15 @@
             Classes="page-title"
             Text="Настройки" />
 
-        <TabControl Grid.Row="1">
-            <TabItem
-                Classes="settings"
-                ToolTip.Tip="Провайдеры нейросетей, модели, адреса API и ключи">
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <ic:FluentIcon
-                            Icon="BrainCircuit"
-                            IconSize="Size20"
-                            IconVariant="Regular" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="Нейросети" />
-                    </StackPanel>
-                </TabItem.Header>
-                <Grid RowDefinitions="Auto,*" RowSpacing="12">
-                    <TextBlock
-                        Grid.Row="0"
-                        Classes="page-subtitle"
-                        Text="Выберите провайдера, настройте активную модель, адрес API и ключ. Ключи хранятся в зашифрованном виде."
-                        TextWrapping="Wrap" />
+        <Grid
+            Grid.Row="1"
+            RowDefinitions="Auto,*"
+            RowSpacing="12">
+            <TextBlock
+                Grid.Row="0"
+                Classes="page-subtitle"
+                Text="Выберите провайдера, настройте активную модель, адрес API и ключ. Ключи хранятся в зашифрованном виде."
+                TextWrapping="Wrap" />
                     <ScrollViewer
                         Grid.Row="1"
                         VerticalScrollBarVisibility="Auto">
@@ -408,135 +380,7 @@
 
                         </StackPanel>
                     </ScrollViewer>
-                </Grid>
-            </TabItem>
-
-            <TabItem
-                Classes="settings"
-                ToolTip.Tip="Подключение к MCP-серверу 1С">
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <ic:FluentIcon
-                            Icon="PlugConnected"
-                            IconSize="Size20"
-                            IconVariant="Regular" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="MCP" />
-                    </StackPanel>
-                </TabItem.Header>
-                <Grid RowDefinitions="Auto,*" RowSpacing="12">
-                    <TextBlock
-                        Grid.Row="0"
-                        Classes="page-subtitle"
-                        Text="MCP-сервер, через который агент работает с 1С. HTTP — подключение к уже запущенному серверу по адресу, stdio — приложение само запускает сервер как процесс."
-                        TextWrapping="Wrap" />
-                    <ScrollViewer
-                        Grid.Row="1"
-                        VerticalScrollBarVisibility="Auto">
-                        <Border Classes="settings-card">
-                            <ContentControl Content="{Binding Mcp}">
-                                <ContentControl.ContentTemplate>
-                                    <DataTemplate x:DataType="vm:McpSettingsViewModel">
-                                        <Grid ColumnDefinitions="190,*" ColumnSpacing="16">
-                                            <TextBlock
-                                                Grid.Column="0"
-                                                Classes="settings-provider"
-                                                Text="1С MCP"
-                                                VerticalAlignment="Top" />
-
-                                            <StackPanel
-                                                Grid.Column="1"
-                                                Spacing="14">
-
-                                                <StackPanel Spacing="6">
-                                                    <TextBlock Classes="settings-label" Text="Транспорт" />
-                                                    <ComboBox
-                                                        Classes="settings"
-                                                        HorizontalAlignment="Left"
-                                                        ItemsSource="{Binding Transports}"
-                                                        MaxDropDownHeight="200"
-                                                        MinWidth="280"
-                                                        SelectedItem="{Binding Transport, Mode=TwoWay}"
-                                                        ToolTip.Tip="Способ подключения к MCP-серверу">
-                                                        <ComboBox.ItemTemplate>
-                                                            <DataTemplate x:DataType="models:McpTransportType">
-                                                                <TextBlock Text="{Binding Converter={converters:McpTransportToNameConverter}}" />
-                                                            </DataTemplate>
-                                                        </ComboBox.ItemTemplate>
-                                                    </ComboBox>
-                                                </StackPanel>
-
-                                                <StackPanel
-                                                    IsVisible="{Binding IsHttp}"
-                                                    Spacing="6">
-                                                    <TextBlock Classes="settings-label" Text="Адрес сервера" />
-                                                    <TextBox
-                                                        Classes="settings"
-                                                        PlaceholderText="http://localhost:6001/mcp"
-                                                        Text="{Binding Endpoint, Mode=TwoWay}"
-                                                        ToolTip.Tip="Адрес MCP-сервера (Streamable HTTP или SSE)" />
-                                                </StackPanel>
-
-                                                <StackPanel
-                                                    IsVisible="{Binding IsStdio}"
-                                                    Spacing="6">
-                                                    <TextBlock Classes="settings-label" Text="Команда" />
-                                                    <TextBox
-                                                        Classes="settings"
-                                                        PlaceholderText="python"
-                                                        Text="{Binding Command, Mode=TwoWay}"
-                                                        ToolTip.Tip="Исполняемый файл MCP-сервера: имя из PATH или полный путь" />
-                                                </StackPanel>
-
-                                                <StackPanel
-                                                    IsVisible="{Binding IsStdio}"
-                                                    Spacing="6">
-                                                    <TextBlock Classes="settings-label" Text="Аргументы" />
-                                                    <TextBox
-                                                        Classes="settings"
-                                                        PlaceholderText="C:\mcp1c\server.py"
-                                                        Text="{Binding Arguments, Mode=TwoWay}"
-                                                        ToolTip.Tip="Аргументы одной строкой, как в командной строке. Пути с пробелами — в двойных кавычках" />
-                                                </StackPanel>
-
-                                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                                                    <Button
-                                                        Grid.Column="0"
-                                                        Classes="settings-add"
-                                                        Command="{Binding CheckCommand}"
-                                                        ToolTip.Tip="Проверить подключение с введёнными настройками, не сохраняя их"
-                                                        VerticalAlignment="Center">
-                                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                                            <ic:FluentIcon
-                                                                Icon="ArrowSync"
-                                                                IconSize="Size16"
-                                                                IconVariant="Regular" />
-                                                            <TextBlock
-                                                                VerticalAlignment="Center"
-                                                                Text="Проверить" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                    <TextBlock
-                                                        Grid.Column="1"
-                                                        Classes="mcp-check"
-                                                        Classes.fail="{Binding IsCheckFailed}"
-                                                        Classes.ok="{Binding IsCheckSucceeded}"
-                                                        Text="{Binding CheckMessage}"
-                                                        TextWrapping="Wrap"
-                                                        VerticalAlignment="Center" />
-                                                </Grid>
-
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ContentControl.ContentTemplate>
-                            </ContentControl>
-                        </Border>
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-        </TabControl>
+        </Grid>
 
         <StackPanel
             Grid.Row="2"

@@ -43,7 +43,7 @@
         <PackageReference Include="TextMateSharp.Grammars" Version="2.0.4" />
     </ItemGroup>
 
-    <!-- Dev-only in-process MCP-инспектор (loopback 127.0.0.1:5599). Тянет ASP.NET/MCP-стек,
+    <!-- Dev-only in-process инспектор (loopback 127.0.0.1:5599). Тянет ASP.NET-стек,
          поэтому подключается только в Debug и никогда не попадает в Release/тримминг. -->
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
         <PackageReference Include="Declarative.Avalonia.AgentTools" Version="12.1.1" />

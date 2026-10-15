@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Models;
 using Avalonia.Threading;
 using ReactiveUI;
@@ -16,8 +19,14 @@ public sealed class ChatDialogViewModel : ViewModelBase
     private string _title = "Новый диалог";
     private string _configurationPath = string.Empty;
     private bool _isConfigurationDump;
+    private bool _isRenaming;
+    private string _pendingTitle = string.Empty;
     private DispatcherTimer? _thinkingTimer;
     private AiTokenUsage? _usage;
+
+    public long? SessionId { get; set; }
+
+    public long? ProjectId { get; set; }
 
     public string Title
     {
@@ -25,21 +34,23 @@ public sealed class ChatDialogViewModel : ViewModelBase
         private set => this.RaiseAndSetIfChanged(ref _title, value);
     }
 
+    public bool IsRenaming
+    {
+        get => _isRenaming;
+        set => this.RaiseAndSetIfChanged(ref _isRenaming, value);
+    }
+
+    public string PendingTitle
+    {
+        get => _pendingTitle;
+        set => this.RaiseAndSetIfChanged(ref _pendingTitle, value);
+    }
+
     public string ConfigurationPath => _configurationPath;
 
     public bool HasConfiguration => _configurationPath.Length > 0;
 
     public bool IsConfigurationWarningVisible => HasConfiguration && !_isConfigurationDump;
-
-    public void SetConfiguration(string path, bool isConfigurationDump)
-    {
-        _configurationPath = path;
-        _isConfigurationDump = isConfigurationDump;
-
-        this.RaisePropertyChanged(nameof(ConfigurationPath));
-        this.RaisePropertyChanged(nameof(HasConfiguration));
-        this.RaisePropertyChanged(nameof(IsConfigurationWarningVisible));
-    }
 
     public ObservableCollection<ChatMessageViewModel> Messages { get; } = [];
 
@@ -52,6 +63,22 @@ public sealed class ChatDialogViewModel : ViewModelBase
     public string ContextUsageTooltip => TotalTokens() is { } total
         ? $"Занято токенов в текущем диалоге: {total:N0}"
         : string.Empty;
+
+    public void SetConfiguration(string path, bool isConfigurationDump)
+    {
+        _configurationPath = path;
+        _isConfigurationDump = isConfigurationDump;
+
+        this.RaisePropertyChanged(nameof(ConfigurationPath));
+        this.RaisePropertyChanged(nameof(HasConfiguration));
+        this.RaisePropertyChanged(nameof(IsConfigurationWarningVisible));
+    }
+
+    public void SetTitle(string title)
+    {
+        Title = title;
+        PendingTitle = title;
+    }
 
     public ChatMessageViewModel AddMessage(AiChatRole role, string text)
     {
@@ -71,6 +98,33 @@ public sealed class ChatDialogViewModel : ViewModelBase
         StartThinkingAnimation();
 
         return message;
+    }
+
+    public async Task LoadMessagesAsync(IAsyncEnumerable<ChatMessageRecord> messages, CancellationToken cancellationToken)
+    {
+        Messages.Clear();
+        AiTokenUsage? usage = null;
+
+        await foreach (var record in messages.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            var message = new ChatMessageViewModel(record.Role, string.Empty, record.CreatedAt);
+            message.AppendReasoning(record.Reasoning);
+
+            var blocks = MessageBlocksSerializer.Deserialize(record.Content);
+
+            if (blocks.Count > 0)
+                message.LoadBlocks(blocks);
+            else if (record.Text.Length > 0)
+                message.AppendText(record.Text);
+
+            Messages.Add(message);
+
+            if (record.Usage is { } recordUsage)
+                usage = recordUsage;
+        }
+
+        if (usage is { } finalUsage)
+            ApplyUsage(finalUsage);
     }
 
     public void ApplyUsage(AiTokenUsage usage)

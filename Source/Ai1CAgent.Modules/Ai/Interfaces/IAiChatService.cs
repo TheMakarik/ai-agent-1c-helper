@@ -8,11 +8,13 @@ public interface IAiChatService
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
         string? configurationPath,
+        long? projectId,
         CancellationToken cancellationToken);
 
     IAsyncEnumerable<AiChatChunk> StreamAsync(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
         string? configurationPath,
+        long? projectId,
         CancellationToken cancellationToken);
 }

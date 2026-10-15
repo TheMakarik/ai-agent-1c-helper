@@ -4,14 +4,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Ai1CAgent.Avalonia.Services;
+using Ai1CAgent.Core.Common;
 using Ai1CAgent.Core.Models;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai.Interfaces;
 using Ai1CAgent.Modules.Configuration.Interfaces;
-using Ai1CAgent.Modules.Mcp.Interfaces;
 using Avalonia.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -24,8 +25,7 @@ public sealed class MainViewModel : ViewModelBase
     private readonly IAiModelCatalog _modelCatalog;
     private readonly IAiSettingsStore _settingsStore;
     private readonly IAiChatService _chatService;
-    private readonly IMcpToolProvider _mcpToolProvider;
-    private readonly IMcpSettingsStore _mcpSettingsStore;
+    private readonly IChatStore _chatStore;
     private readonly IConfigurationToolProvider _configurationToolProvider;
     private readonly IConfigurationPathStore _configurationPathStore;
     private readonly IFolderPickerService _folderPicker;
@@ -40,32 +40,29 @@ public sealed class MainViewModel : ViewModelBase
     private bool _isModelPickerOpen;
     private bool _isConfirmPending;
     private string _confirmSaveError = string.Empty;
-    private bool? _mcpStatus;
-    private bool _isMcpWarningOpen;
-    private bool _mcpWarningShown;
 
     public MainViewModel(
         IOptions<AiOptions> aiOptions,
         IAiModelCatalog modelCatalog,
         IAiSettingsStore settingsStore,
         IAiChatService chatService,
-        IMcpToolProvider mcpToolProvider,
-        IMcpSettingsStore mcpSettingsStore,
+        IChatStore chatStore,
         IConfigurationToolProvider configurationToolProvider,
         IConfigurationPathStore configurationPathStore,
         IFolderPickerService folderPicker,
+        ProjectsViewModel projects,
         SettingsViewModel settings,
         ILogger<MainViewModel> logger)
     {
         _modelCatalog = modelCatalog;
         _settingsStore = settingsStore;
         _chatService = chatService;
-        _mcpToolProvider = mcpToolProvider;
-        _mcpSettingsStore = mcpSettingsStore;
+        _chatStore = chatStore;
         _configurationToolProvider = configurationToolProvider;
         _configurationPathStore = configurationPathStore;
         _folderPicker = folderPicker;
         _logger = logger;
+        Projects = projects;
         Settings = settings;
         Title = aiOptions.Value.Title;
 
@@ -85,7 +82,7 @@ public sealed class MainViewModel : ViewModelBase
         RefreshModels();
 
         settingsStore.SettingsChanged += (_, _) => Dispatcher.UIThread.Post(RefreshModels);
-        mcpSettingsStore.SettingsChanged += (_, _) => Dispatcher.UIThread.Post(OnMcpSettingsChanged);
+        Projects.SelectionChanged += OnProjectSelectionChanged;
 
         var canSend = Changed
             .Select(_ => CanSend())
@@ -101,6 +98,14 @@ public sealed class MainViewModel : ViewModelBase
 
         NewDialogCommand = ReactiveCommand.Create(CreateDialog);
         SelectChatModelCommand = ReactiveCommand.Create<AiModel>(SelectChatModel);
+        OpenProjectFolderCommand = ReactiveCommand.Create<string>(
+            path => OpenFolder.Handle(path).Subscribe(_ => { }));
+
+        BeginRenameDialogCommand = ReactiveCommand.Create<ChatDialogViewModel>(BeginRenameDialog);
+        CancelRenameDialogCommand = ReactiveCommand.Create<ChatDialogViewModel>(CancelRenameDialog);
+
+        CommitRenameDialogCommand = ReactiveCommand.CreateFromTask<ChatDialogViewModel>(CommitRenameDialogAsync);
+        CommitRenameDialogCommand.ThrownExceptions.Subscribe(ex => _logger.LogError(ex, "Не удалось переименовать диалог"));
 
         SelectConfigurationCommand = ReactiveCommand.CreateFromTask(SelectConfigurationAsync);
         SelectConfigurationCommand.ThrownExceptions.Subscribe(ex =>
@@ -109,13 +114,8 @@ public sealed class MainViewModel : ViewModelBase
         ClearConfigurationCommand = ReactiveCommand.Create(ClearConfiguration);
 
         ConfirmUnsavedChanges = new Interaction<Unit, bool>();
-        ConfirmMcpUnavailable = new Interaction<Unit, bool>();
 
-        CheckMcpCommand = ReactiveCommand.CreateFromTask(CheckMcpAsync);
-        CheckMcpCommand.ThrownExceptions.Subscribe(ex =>
-            _logger.LogError(ex, "Ошибка проверки подключения к 1С MCP"));
-
-        _ = CheckMcpAsync();
+        _ = InitializeAsync();
     }
 
     public string Title { get; }
@@ -124,37 +124,15 @@ public sealed class MainViewModel : ViewModelBase
 
     public IReadOnlyList<NavigationItemViewModel> Sections { get; }
 
+    public ProjectsViewModel Projects { get; }
+
     public SettingsViewModel Settings { get; }
 
     public ObservableCollection<ChatDialogViewModel> Dialogs { get; } = [];
 
     public Interaction<Unit, bool> ConfirmUnsavedChanges { get; }
 
-    public Interaction<Unit, bool> ConfirmMcpUnavailable { get; }
-
-    public bool IsMcpAvailable => _mcpStatus is true;
-
-    public bool IsMcpUnavailable => _mcpStatus is false;
-
-    public bool IsMcpChecking => _mcpStatus is null;
-
-    public bool IsMcpWarningOpen
-    {
-        get => _isMcpWarningOpen;
-        set => this.RaiseAndSetIfChanged(ref _isMcpWarningOpen, value);
-    }
-
-    public string McpStatusTooltip => _mcpStatus switch
-    {
-        false when !_mcpSettingsStore.Get().IsConfigured =>
-            "1С MCP — сервер не настроен: укажите адрес или команду запуска в «Настройки» → «MCP». " +
-            "Нажмите, чтобы проверить соединение повторно.",
-        true => "1С MCP — подключение к серверу 1С установлено: агент может работать с конфигурацией. " +
-                "Нажмите, чтобы проверить соединение повторно.",
-        false => "1С MCP — подключения к серверу 1С нет: агент отвечает на вопросы, но не работает с 1С. " +
-                 "Нажмите, чтобы проверить соединение повторно.",
-        _ => "1С MCP — соединение ещё не проверено. Нажмите, чтобы проверить подключение к серверу 1С.",
-    };
+    public Interaction<string, Unit> OpenFolder { get; } = new();
 
     public ProviderPickerViewModel? SelectedChatProvider
     {
@@ -231,14 +209,20 @@ public sealed class MainViewModel : ViewModelBase
 
     public bool IsChatSelected => SelectedSection.Section is AppSection.Chat;
 
+    public bool IsProjectsSelected => SelectedSection.Section is AppSection.Projects;
+
     public bool IsSettingsSelected => SelectedSection.Section is AppSection.Settings;
 
-    public bool IsPlaceholderSelected => !IsChatSelected && !IsSettingsSelected;
+    public bool IsPlaceholderSelected => !IsChatSelected && !IsProjectsSelected && !IsSettingsSelected;
 
     public ChatDialogViewModel SelectedDialog
     {
         get => _selectedDialog;
-        set => this.RaiseAndSetIfChanged(ref _selectedDialog, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedDialog, value);
+            _ = LoadDialogMessagesAsync(value);
+        }
     }
 
     public string Prompt
@@ -253,11 +237,17 @@ public sealed class MainViewModel : ViewModelBase
 
     public ReactiveCommand<AiModel, Unit> SelectChatModelCommand { get; }
 
+    public ReactiveCommand<string, Unit> OpenProjectFolderCommand { get; }
+
+    public ReactiveCommand<ChatDialogViewModel, Unit> BeginRenameDialogCommand { get; }
+
+    public ReactiveCommand<ChatDialogViewModel, Unit> CommitRenameDialogCommand { get; }
+
+    public ReactiveCommand<ChatDialogViewModel, Unit> CancelRenameDialogCommand { get; }
+
     public ReactiveCommand<Unit, Unit> SelectConfigurationCommand { get; }
 
     public ReactiveCommand<Unit, Unit> ClearConfigurationCommand { get; }
-
-    public ReactiveCommand<Unit, bool> CheckMcpCommand { get; }
 
     private bool CanSend() => SelectedModel is not null && !string.IsNullOrWhiteSpace(Prompt);
 
@@ -265,6 +255,7 @@ public sealed class MainViewModel : ViewModelBase
     {
         this.RaiseAndSetIfChanged(ref _selectedSection, value);
         this.RaisePropertyChanged(nameof(IsChatSelected));
+        this.RaisePropertyChanged(nameof(IsProjectsSelected));
         this.RaisePropertyChanged(nameof(IsSettingsSelected));
         this.RaisePropertyChanged(nameof(IsPlaceholderSelected));
     }
@@ -334,6 +325,58 @@ public sealed class MainViewModel : ViewModelBase
             ?? selected?.Models.FirstOrDefault();
     }
 
+    private async Task InitializeAsync()
+    {
+        await Projects.LoadAsync(CancellationToken.None);
+        await ReloadDialogsAsync();
+    }
+
+    private void OnProjectSelectionChanged(object? sender, EventArgs e) =>
+        Dispatcher.UIThread.Post(() => _ = ReloadDialogsAsync());
+
+    private async Task ReloadDialogsAsync()
+    {
+        try
+        {
+            var projectId = Projects.SelectedProject?.Id;
+            var sessions = await _chatStore.GetSessionsAsync(projectId, CancellationToken.None);
+
+            Dialogs.Clear();
+
+            foreach (var session in sessions)
+            {
+                var dialog = new ChatDialogViewModel { SessionId = session.Id, ProjectId = session.ProjectId };
+                dialog.SetTitle(session.Title);
+                ApplyProjectConfiguration(dialog);
+                Dialogs.Add(dialog);
+            }
+
+            if (Dialogs.Count == 0)
+                Dialogs.Add(CreateDialogViewModel());
+
+            SelectedDialog = Dialogs[0];
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Не удалось загрузить список диалогов");
+        }
+    }
+
+    private async Task LoadDialogMessagesAsync(ChatDialogViewModel dialog)
+    {
+        if (dialog.SessionId is not { } sessionId || !dialog.IsEmpty)
+            return;
+
+        try
+        {
+            await dialog.LoadMessagesAsync(_chatStore.GetMessagesAsync(sessionId, CancellationToken.None), CancellationToken.None);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Не удалось загрузить сообщения диалога");
+        }
+    }
+
     private void CreateDialog()
     {
         var chatSection = Sections[0];
@@ -361,12 +404,57 @@ public sealed class MainViewModel : ViewModelBase
     private ChatDialogViewModel CreateDialogViewModel()
     {
         var dialog = new ChatDialogViewModel();
+        ApplyProjectConfiguration(dialog);
+
+        return dialog;
+    }
+
+    private void ApplyProjectConfiguration(ChatDialogViewModel dialog)
+    {
+        if (Projects.SelectedProject is { CanSelect: true } project)
+        {
+            dialog.ProjectId = project.Id;
+            dialog.SetConfiguration(project.Path, _configurationToolProvider.IsConfigurationDump(project.Path));
+            return;
+        }
+
         var lastPath = _configurationPathStore.GetLastPath();
 
         if (lastPath.Length > 0)
             dialog.SetConfiguration(lastPath, _configurationToolProvider.IsConfigurationDump(lastPath));
+    }
 
-        return dialog;
+    public void BeginRenameDialog(ChatDialogViewModel dialog)
+    {
+        dialog.PendingTitle = dialog.Title;
+        dialog.IsRenaming = true;
+    }
+
+    public void CancelRenameDialog(ChatDialogViewModel dialog)
+    {
+        dialog.PendingTitle = dialog.Title;
+        dialog.IsRenaming = false;
+    }
+
+    public async Task CommitRenameDialogAsync(ChatDialogViewModel dialog, CancellationToken cancellationToken)
+    {
+        var title = dialog.PendingTitle.Trim();
+
+        if (title.Length == 0)
+        {
+            CancelRenameDialog(dialog);
+            return;
+        }
+
+        if (!string.Equals(title, dialog.Title, StringComparison.Ordinal))
+        {
+            if (dialog.SessionId is { } sessionId)
+                await _chatStore.RenameSessionAsync(sessionId, title, cancellationToken);
+
+            dialog.SetTitle(title);
+        }
+
+        dialog.IsRenaming = false;
     }
 
     private async Task SelectConfigurationAsync()
@@ -394,101 +482,96 @@ public sealed class MainViewModel : ViewModelBase
         if (text.Length == 0)
             return;
 
-        if (!await EnsureMcpReadyAsync())
-            return;
-
         Prompt = string.Empty;
 
         var dialog = SelectedDialog;
         dialog.AddMessage(AiChatRole.User, text);
-        var history = dialog.ToAiMessages();
 
+        var sessionId = await EnsureSessionAsync(dialog, cancellationToken);
+        await AppendMessageAsync(sessionId, AiChatRole.User, text, string.Empty, null, string.Empty, cancellationToken);
+
+        var history = dialog.ToAiMessages();
         ChatMessageViewModel? answer = null;
+        var answerText = new StringBuilder();
+        var answerReasoning = new StringBuilder();
+        AiTokenUsage? usage = null;
 
         try
         {
-            await foreach (var chunk in _chatService.StreamAsync(SelectedModel, history, dialog.ConfigurationPath, cancellationToken))
+            await foreach (var chunk in _chatService.StreamAsync(SelectedModel, history, dialog.ConfigurationPath, dialog.ProjectId, cancellationToken))
             {
+                if (chunk.ToolName is { Length: > 0 } toolName)
+                {
+                    answer ??= dialog.AddStreamingMessage();
+                    answer.AddTool(ToolNameDisplay.Resolve(toolName));
+                }
+
                 if (chunk.Text.Length > 0 || chunk.Reasoning.Length > 0)
                 {
                     answer ??= dialog.AddStreamingMessage();
                     answer.AppendReasoning(chunk.Reasoning);
                     answer.AppendText(chunk.Text);
+                    answerText.Append(chunk.Text);
+                    answerReasoning.Append(chunk.Reasoning);
                 }
 
-                if (chunk.Usage is { } usage)
-                    dialog.ApplyUsage(usage);
+                if (chunk.Usage is { } chunkUsage)
+                {
+                    usage = chunkUsage;
+                    dialog.ApplyUsage(chunkUsage);
+                }
             }
         }
         finally
         {
             answer?.FinishThinking();
-            _ = CheckMcpAsync();
         }
-    }
 
-    private async Task<bool> EnsureMcpReadyAsync()
-    {
-        if (await CheckMcpAsync())
-            return true;
-
-        if (_mcpWarningShown || !_mcpSettingsStore.Get().IsConfigured)
-            return true;
-
-        _mcpWarningShown = true;
-
-        return await HandleMcpUnavailableAsync();
-    }
-
-    private async Task<bool> CheckMcpAsync()
-    {
-        try
+        if (answerText.Length > 0 || answerReasoning.Length > 0)
         {
-            var isAvailable = await _mcpToolProvider.CheckAsync(CancellationToken.None);
-            SetMcpStatus(isAvailable);
-            return isAvailable;
-        }
-        catch (Exception exception)
-        {
-            _logger.LogWarning(exception, "Не удалось проверить подключение к 1С MCP");
-            SetMcpStatus(false);
-            return false;
+            await AppendMessageAsync(
+                sessionId,
+                AiChatRole.Assistant,
+                answerText.ToString(),
+                answerReasoning.ToString(),
+                usage,
+                answer?.SerializeContent() ?? string.Empty,
+                cancellationToken);
         }
     }
 
-    private void OnMcpSettingsChanged()
+    private async Task<long> EnsureSessionAsync(ChatDialogViewModel dialog, CancellationToken cancellationToken)
     {
-        _mcpWarningShown = false;
-        SetMcpStatus(null);
-        _ = CheckMcpAsync();
+        if (dialog.SessionId is { } existing)
+            return existing;
+
+        var session = await _chatStore.CreateSessionAsync(dialog.ProjectId, dialog.Title, cancellationToken);
+        dialog.SessionId = session.Id;
+
+        return session.Id;
     }
 
-    private Task<bool> HandleMcpUnavailableAsync()
+    private Task AppendMessageAsync(
+        long sessionId,
+        AiChatRole role,
+        string text,
+        string reasoning,
+        AiTokenUsage? usage,
+        string content,
+        CancellationToken cancellationToken)
     {
-        var request = new TaskCompletionSource<bool>();
+        var record = new ChatMessageRecord(
+            0,
+            sessionId,
+            role,
+            text,
+            reasoning,
+            usage?.InputTokens,
+            usage?.OutputTokens,
+            usage?.TotalTokens,
+            DateTimeOffset.UtcNow,
+            content);
 
-        ConfirmMcpUnavailable.Handle(Unit.Default).Subscribe(
-            proceed => request.TrySetResult(proceed),
-            exception => request.TrySetException(exception),
-            () => request.TrySetResult(true));
-
-        return request.Task;
-    }
-
-    private void SetMcpStatus(bool? status)
-    {
-        void Apply()
-        {
-            _mcpStatus = status;
-            this.RaisePropertyChanged(nameof(IsMcpAvailable));
-            this.RaisePropertyChanged(nameof(IsMcpUnavailable));
-            this.RaisePropertyChanged(nameof(IsMcpChecking));
-            this.RaisePropertyChanged(nameof(McpStatusTooltip));
-        }
-
-        if (Dispatcher.UIThread.CheckAccess())
-            Apply();
-        else
-            Dispatcher.UIThread.Post(Apply);
+        return _chatStore.AppendMessageAsync(record, cancellationToken);
     }
 }

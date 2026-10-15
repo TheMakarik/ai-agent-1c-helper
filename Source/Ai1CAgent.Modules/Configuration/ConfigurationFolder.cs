@@ -133,6 +133,62 @@ internal sealed class ConfigurationFolder
         return matches == 0 ? "Совпадений не найдено" : builder.ToString();
     }
 
+    public string Find(string pattern, string? relativePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pattern);
+
+        var directory = Resolve(relativePath);
+
+        if (!Directory.Exists(directory))
+            throw new DirectoryNotFoundException($"Папка не найдена: {ToRelative(directory)}");
+
+        var mask = pattern.Trim();
+        var hasWildcard = mask.IndexOfAny(['*', '?']) >= 0;
+        var builder = new StringBuilder();
+        var count = 0;
+
+        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+                     .Order(StringComparer.OrdinalIgnoreCase))
+        {
+            var name = Path.GetFileName(file);
+            var matches = hasWildcard
+                ? System.IO.Enumeration.FileSystemName.MatchesSimpleExpression(mask, name, ignoreCase: true)
+                : name.Contains(mask, StringComparison.OrdinalIgnoreCase);
+
+            if (!matches)
+                continue;
+
+            if (count == MaxSearchMatches)
+            {
+                builder.AppendLine($"… показаны первые {MaxSearchMatches} файлов, уточните шаблон или папку");
+                break;
+            }
+
+            builder.AppendLine(ToRelative(file));
+            count++;
+        }
+
+        return count == 0 ? "Файлы не найдены" : builder.ToString();
+    }
+
+    public string Info(string relativePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
+
+        var file = Resolve(relativePath);
+
+        if (!File.Exists(file))
+            throw new FileNotFoundException($"Файл не найден: {ToRelative(file)}");
+
+        var info = new FileInfo(file);
+
+        return new StringBuilder()
+            .Append("Файл: ").AppendLine(ToRelative(file))
+            .Append("Размер: ").Append(info.Length).AppendLine(" байт")
+            .Append("Изменён (UTC): ").AppendLine(info.LastWriteTimeUtc.ToString("u"))
+            .ToString();
+    }
+
     private string Resolve(string? relativePath)
     {
         var relative = (relativePath ?? string.Empty).Trim().Replace('/', Path.DirectorySeparatorChar);
