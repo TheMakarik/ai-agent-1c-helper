@@ -1,4 +1,4 @@
-using Ai1CAgent.Core.Models;
+﻿using Ai1CAgent.Core.Models;
 using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Tests.Infrastructure;
 using FluentAssertions;
@@ -27,7 +27,7 @@ public sealed class ClaudeChatTests : IDisposable
         var model = new AiModel(AiProvider.Claude, ModelName);
 
         // Act
-        var answer = await _systemUnderTests.SendAsync(model, ChatPrompts.Arithmetic, _timeout.Token);
+        var answer = await _systemUnderTests.SendAsync(model, ChatPrompts.Arithmetic, null, _timeout.Token);
 
         // Assert
         answer.Should().Contain("4");
@@ -41,7 +41,7 @@ public sealed class ClaudeChatTests : IDisposable
         var model = new AiModel(AiProvider.Claude, ModelName);
 
         // Act
-        var chunks = await _systemUnderTests.StreamAsync(model, ChatPrompts.Arithmetic, _timeout.Token).ToListAsync();
+        var chunks = await _systemUnderTests.StreamAsync(model, ChatPrompts.Arithmetic, null, _timeout.Token).ToListAsync();
 
         // Assert
         string.Concat(chunks.Select(chunk => chunk.Text)).Should().Contain("4");
@@ -55,7 +55,7 @@ public sealed class ClaudeChatTests : IDisposable
         var model = new AiModel(AiProvider.Claude, ModelName);
 
         // Act
-        var answer = await _systemUnderTests.SendAsync(model, ChatPrompts.History, _timeout.Token);
+        var answer = await _systemUnderTests.SendAsync(model, ChatPrompts.History, null, _timeout.Token);
 
         // Assert
         answer.Should().ContainEquivalentOf("Барсук");

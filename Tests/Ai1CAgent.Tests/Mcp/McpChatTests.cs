@@ -48,7 +48,7 @@ public sealed class McpChatTests : IAsyncDisposable
         _factory = factory;
 
         // Act
-        await systemUnderTests.SendAsync(new AiModel(AiProvider.Ollama, modelName), EchoPrompt, _timeout.Token);
+        await systemUnderTests.SendAsync(new AiModel(AiProvider.Ollama, modelName), EchoPrompt, null, _timeout.Token);
 
         // Assert
         echoTool.InvocationCount.Should().BePositive();

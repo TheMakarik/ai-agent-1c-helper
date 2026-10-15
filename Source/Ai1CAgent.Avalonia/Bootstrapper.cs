@@ -1,9 +1,12 @@
 using System;
 using System.Threading.Tasks;
+using Ai1CAgent.Avalonia.Services;
 using Ai1CAgent.Avalonia.ViewModels;
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Modules.Ai.Interfaces;
+using Ai1CAgent.Modules.Configuration;
+using Ai1CAgent.Modules.Configuration.Interfaces;
 using Ai1CAgent.Modules.Mcp;
 using Ai1CAgent.Modules.Mcp.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -57,6 +60,9 @@ public sealed class Bootstrapper
 
     private static void RegisterServices(IServiceCollection services)
     {
+        services.AddSingleton<IConfigurationToolProvider, ConfigurationToolProvider>();
+        services.AddSingleton<IConfigurationPathStore, ConfigurationPathStore>();
+        services.AddSingleton<IFolderPickerService, AvaloniaFolderPickerService>();
         services.AddSingleton<IMcpSettingsStore, McpSettingsStore>();
         services.AddSingleton<IMcpToolProvider, McpToolProvider>();
         services.AddSingleton<ISecretProtector, AesGcmSecretProtector>();

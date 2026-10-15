@@ -1,6 +1,7 @@
 using Ai1CAgent.Core.Options;
 using Ai1CAgent.Modules.Ai;
 using Ai1CAgent.Modules.Ai.Interfaces;
+using Ai1CAgent.Modules.Configuration;
 using Ai1CAgent.Modules.Mcp.Interfaces;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ public static class ChatServiceBuilder
         var service = new AiChatService(
             factory,
             mcpToolProvider ?? EmptyMcpToolProvider.Create(),
+            new ConfigurationToolProvider(A.Dummy<ILogger<ConfigurationToolProvider>>()),
             A.Dummy<ILogger<AiChatService>>());
 
         return (service, factory);

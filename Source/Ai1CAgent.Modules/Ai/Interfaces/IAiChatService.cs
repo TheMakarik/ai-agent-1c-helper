@@ -7,10 +7,12 @@ public interface IAiChatService
     Task<string> SendAsync(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
+        string? configurationPath,
         CancellationToken cancellationToken);
 
     IAsyncEnumerable<AiChatChunk> StreamAsync(
         AiModel model,
         IReadOnlyCollection<AiChatMessage> messages,
+        string? configurationPath,
         CancellationToken cancellationToken);
 }
