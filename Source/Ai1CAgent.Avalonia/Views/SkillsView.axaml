@@ -1,0 +1,30 @@
+<UserControl
+    x:Class="Ai1CAgent.Avalonia.Views.SkillsView"
+    x:DataType="vm:SkillsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels">
+
+    <Grid
+        Margin="40,24,52,24"
+        RowDefinitions="Auto,*"
+        RowSpacing="12">
+        <TextBlock
+            Grid.Row="0"
+            Classes="page-title"
+            Text="База Знаний" />
+
+        <TreeView
+            Grid.Row="1"
+            ItemsSource="{Binding Roots}"
+            SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+            <TreeView.ItemTemplate>
+                <TreeDataTemplate x:DataType="vm:SkillNodeViewModel" ItemsSource="{Binding Children}">
+                    <TextBlock
+                        Margin="0,2"
+                        Text="{Binding Title}" />
+                </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+    </Grid>
+</UserControl>

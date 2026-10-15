@@ -15,7 +15,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**" />
+        <AvaloniaResource Include="Assets\**" Exclude="Assets\Skills\**" />
+        <EmbeddedResource Include="Assets\Skills\**\*.md">
+            <LogicalName>Skills/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
         <EmbeddedResource Include="Grammars\bsl.tmLanguage.json">
             <LogicalName>Ai1CAgent.Avalonia.Grammars.bsl.tmLanguage.json</LogicalName>
         </EmbeddedResource>

@@ -1,0 +1,50 @@
+<Window
+    x:Class="Ai1CAgent.Avalonia.Views.SkillEditorWindow"
+    x:DataType="vm:SkillEditorViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Ai1CAgent.Avalonia.ViewModels"
+    Width="820"
+    Height="640"
+    MinWidth="520"
+    MinHeight="360"
+    Background="{StaticResource ContentBrush}"
+    Foreground="{StaticResource TextBrush}"
+    Title="{Binding Title}">
+
+    <Grid
+        Margin="16"
+        RowDefinitions="Auto,*,Auto"
+        RowSpacing="12">
+        <TextBlock
+            Grid.Row="0"
+            Classes="page-title"
+            Text="{Binding Title}" />
+
+        <TextBox
+            Grid.Row="1"
+            AcceptsReturn="True"
+            FontFamily="monospace"
+            IsReadOnly="{Binding IsReadOnly}"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
+            Text="{Binding Text, Mode=TwoWay}"
+            TextWrapping="NoWrap" />
+
+        <StackPanel
+            Grid.Row="2"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                Classes="settings-save"
+                Click="OnSaveClick"
+                IsVisible="{Binding Editable}"
+                Content="Сохранить" />
+            <Button
+                Classes="dialog-action"
+                Click="OnCloseClick"
+                Content="Закрыть" />
+        </StackPanel>
+    </Grid>
+</Window>

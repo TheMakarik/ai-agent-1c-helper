@@ -28,6 +28,7 @@ public static class ChatServiceBuilder
             factory,
             new ConfigurationToolProvider(A.Dummy<ILogger<ConfigurationToolProvider>>()),
             new ProjectContextToolProvider(A.Dummy<IProjectStore>(), A.Dummy<ILogger<ProjectContextToolProvider>>()),
+            new SkillToolProvider(A.Dummy<ISkillStore>(), A.Dummy<ILogger<SkillToolProvider>>()),
             new SystemDocumentationToolProvider(A.Dummy<ISystemDocumentation>()),
             A.Dummy<ILogger<AiChatService>>());
 

@@ -13,6 +13,7 @@ public sealed class AiChatService(
     IChatClientFactory chatClientFactory,
     IConfigurationToolProvider configurationToolProvider,
     IProjectContextToolProvider projectContextToolProvider,
+    ISkillToolProvider skillToolProvider,
     ISystemDocumentationToolProvider systemDocumentationToolProvider,
     ILogger<AiChatService> logger) : IAiChatService
 {
@@ -73,6 +74,7 @@ public sealed class AiChatService(
     private ChatOptions? CreateChatOptions(string? configurationPath, long? projectId)
     {
         List<AITool> tools = [.. systemDocumentationToolProvider.GetTools()];
+        tools.AddRange(skillToolProvider.GetTools(projectId));
 
         if (!string.IsNullOrWhiteSpace(configurationPath))
         {

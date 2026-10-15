@@ -51,6 +51,7 @@ public sealed class MainViewModel : ViewModelBase
         IConfigurationPathStore configurationPathStore,
         IFolderPickerService folderPicker,
         ProjectsViewModel projects,
+        SkillsViewModel skills,
         SettingsViewModel settings,
         ILogger<MainViewModel> logger)
     {
@@ -63,6 +64,7 @@ public sealed class MainViewModel : ViewModelBase
         _folderPicker = folderPicker;
         _logger = logger;
         Projects = projects;
+        Skills = skills;
         Settings = settings;
         Title = aiOptions.Value.Title;
 
@@ -125,6 +127,8 @@ public sealed class MainViewModel : ViewModelBase
     public IReadOnlyList<NavigationItemViewModel> Sections { get; }
 
     public ProjectsViewModel Projects { get; }
+
+    public SkillsViewModel Skills { get; }
 
     public SettingsViewModel Settings { get; }
 
@@ -211,9 +215,11 @@ public sealed class MainViewModel : ViewModelBase
 
     public bool IsProjectsSelected => SelectedSection.Section is AppSection.Projects;
 
+    public bool IsDocumentationSelected => SelectedSection.Section is AppSection.Documentation;
+
     public bool IsSettingsSelected => SelectedSection.Section is AppSection.Settings;
 
-    public bool IsPlaceholderSelected => !IsChatSelected && !IsProjectsSelected && !IsSettingsSelected;
+    public bool IsPlaceholderSelected => !IsChatSelected && !IsProjectsSelected && !IsDocumentationSelected && !IsSettingsSelected;
 
     public ChatDialogViewModel SelectedDialog
     {
@@ -256,6 +262,7 @@ public sealed class MainViewModel : ViewModelBase
         this.RaiseAndSetIfChanged(ref _selectedSection, value);
         this.RaisePropertyChanged(nameof(IsChatSelected));
         this.RaisePropertyChanged(nameof(IsProjectsSelected));
+        this.RaisePropertyChanged(nameof(IsDocumentationSelected));
         this.RaisePropertyChanged(nameof(IsSettingsSelected));
         this.RaisePropertyChanged(nameof(IsPlaceholderSelected));
     }
@@ -328,11 +335,16 @@ public sealed class MainViewModel : ViewModelBase
     private async Task InitializeAsync()
     {
         await Projects.LoadAsync(CancellationToken.None);
+        Skills.Reload(Projects.SelectedProject?.Id);
         await ReloadDialogsAsync();
     }
 
     private void OnProjectSelectionChanged(object? sender, EventArgs e) =>
-        Dispatcher.UIThread.Post(() => _ = ReloadDialogsAsync());
+        Dispatcher.UIThread.Post(() =>
+        {
+            Skills.Reload(Projects.SelectedProject?.Id);
+            _ = ReloadDialogsAsync();
+        });
 
     private async Task ReloadDialogsAsync()
     {

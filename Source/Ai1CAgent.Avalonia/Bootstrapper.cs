@@ -68,6 +68,9 @@ public sealed class Bootstrapper
         services.AddSingleton<IConfigurationPathStore, ConfigurationPathStore>();
         services.AddSingleton<ISystemDocumentation, AvaloniaSystemDocumentation>();
         services.AddSingleton<ISystemDocumentationToolProvider, SystemDocumentationToolProvider>();
+        services.AddSingleton<ISkillStore, FileSkillStore>();
+        services.AddSingleton<ISkillToolProvider, SkillToolProvider>();
+        services.AddSingleton<IEmbeddedSkills, EmbeddedSkills>();
         services.AddSingleton(new Database());
         services.AddSingleton<IChatStore, SqliteChatStore>();
         services.AddSingleton<IProjectStore, SqliteProjectStore>();
@@ -79,6 +82,7 @@ public sealed class Bootstrapper
         services.AddSingleton<IAiModelCatalog, AiModelCatalog>();
         services.AddSingleton<IAiChatService, AiChatService>();
         services.AddSingleton<ProjectsViewModel>();
+        services.AddSingleton<SkillsViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<MainViewModel>();
     }

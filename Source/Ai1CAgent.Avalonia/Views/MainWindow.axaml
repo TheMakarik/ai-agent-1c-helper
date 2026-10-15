@@ -562,6 +562,11 @@
                 <views:ProjectsView DataContext="{Binding Projects}" />
             </Panel>
 
+            <!--  База знаний  -->
+            <Panel Grid.Row="1" IsVisible="{Binding IsDocumentationSelected}">
+                <views:SkillsView DataContext="{Binding Skills}" />
+            </Panel>
+
             <!--  Заглушка для остальных разделов  -->
             <StackPanel
                 Grid.Row="1"

@@ -14,5 +14,9 @@ public static class AppDataPaths
 
     public static string DatabaseFile { get; } = Path.Join(Directory, "ai1cagent.db");
 
+    public static string SkillsGlobal { get; } = Path.Join(Directory, "Skills", "Global");
+
+    public static string SkillsLocal { get; } = Path.Join(Directory, "Skills", "Local");
+
     public static string SecretKeyFile { get; } = Path.Join(Directory, "secret.key");
 }
