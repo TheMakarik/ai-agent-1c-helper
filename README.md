@@ -1,7 +1,20 @@
+<p align="center">
+  <img src="Source/Ai1CAgent.Avalonia/Assets/apogey-logo.png" width="160" alt="Apogey" />
+</p>
+
 # 1С:АгентПомощник
 
 Десктопный ИИ-помощник для разработчиков **1С:Предприятие**. Настольное кроссплатформенное приложение
 с чатом, поддержкой локальных и внешних нейросетей и инструментами для работы с конфигурацией 1С.
+
+## Скриншоты
+
+<p align="center">
+  <img src="Screens/screenshot-01.png" width="720" alt="Скриншот приложения 1" />
+  <img src="Screens/screenshot-02.png" width="720" alt="Скриншот приложения 2" />
+  <img src="Screens/screenshot-03.png" width="720" alt="Скриншот приложения 3" />
+  <img src="Screens/screenshot-04.png" width="720" alt="Скриншот приложения 4" />
+</p>
 
 ## Возможности
 
