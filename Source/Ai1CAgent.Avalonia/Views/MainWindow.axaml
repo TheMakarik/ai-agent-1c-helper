@@ -141,6 +141,12 @@
             <Setter Property="Foreground" Value="{StaticResource SidebarHeaderBrush}" />
         </Style>
 
+        <Style Selector="TextBlock.status-context">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource SidebarHeaderBrush}" />
+        </Style>
+
         <Style Selector="Button.status-mcp.ok /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}" />
         </Style>
@@ -169,7 +175,7 @@
             Background="{StaticResource SidebarBrush}">
             <Grid
                 Margin="12,8,12,12"
-                RowDefinitions="Auto,Auto,Auto,*,Auto"
+                RowDefinitions="Auto,Auto,Auto,*,Auto,Auto"
                 RowSpacing="8">
                 <StackPanel
                     Grid.Row="0"
@@ -218,8 +224,28 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Button
+                <StackPanel
                     Grid.Row="4"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Left"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    IsVisible="{Binding SelectedDialog.HasContextUsage}"
+                    ToolTip.Tip="{Binding SelectedDialog.ContextUsageTooltip}">
+                    <ic:FluentIcon
+                        VerticalAlignment="Center"
+                        Foreground="{StaticResource SidebarHeaderBrush}"
+                        Icon="DataUsage"
+                        IconSize="Size16"
+                        IconVariant="Regular" />
+                    <TextBlock
+                        Classes="status-context"
+                        VerticalAlignment="Center"
+                        Text="{Binding SelectedDialog.ContextUsageText}" />
+                </StackPanel>
+
+                <Button
+                    Grid.Row="5"
                     Classes="status-mcp"
                     Classes.checking="{Binding IsMcpChecking}"
                     Classes.ok="{Binding IsMcpAvailable}"

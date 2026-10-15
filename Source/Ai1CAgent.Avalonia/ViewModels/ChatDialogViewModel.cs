@@ -15,6 +15,7 @@ public sealed class ChatDialogViewModel : ViewModelBase
 
     private string _title = "Новый диалог";
     private DispatcherTimer? _thinkingTimer;
+    private AiTokenUsage? _usage;
 
     public string Title
     {
@@ -25,6 +26,14 @@ public sealed class ChatDialogViewModel : ViewModelBase
     public ObservableCollection<ChatMessageViewModel> Messages { get; } = [];
 
     public bool IsEmpty => Messages.Count == 0;
+
+    public bool HasContextUsage => TotalTokens() is not null;
+
+    public string ContextUsageText => TotalTokens() is { } total ? FormatTokens(total) : string.Empty;
+
+    public string ContextUsageTooltip => TotalTokens() is { } total
+        ? $"Занято токенов в текущем диалоге: {total:N0}"
+        : string.Empty;
 
     public ChatMessageViewModel AddMessage(AiChatRole role, string text)
     {
@@ -44,6 +53,14 @@ public sealed class ChatDialogViewModel : ViewModelBase
         StartThinkingAnimation();
 
         return message;
+    }
+
+    public void ApplyUsage(AiTokenUsage usage)
+    {
+        _usage = usage;
+        this.RaisePropertyChanged(nameof(HasContextUsage));
+        this.RaisePropertyChanged(nameof(ContextUsageText));
+        this.RaisePropertyChanged(nameof(ContextUsageTooltip));
     }
 
     public IReadOnlyCollection<AiChatMessage> ToAiMessages()
@@ -81,6 +98,26 @@ public sealed class ChatDialogViewModel : ViewModelBase
         if (!isThinking)
             _thinkingTimer?.Stop();
     }
+
+    private long? TotalTokens()
+    {
+        if (_usage is null)
+            return null;
+
+        if (_usage.TotalTokens is { } total)
+            return total;
+
+        var sum = (_usage.InputTokens ?? 0) + (_usage.OutputTokens ?? 0);
+
+        return sum > 0 ? sum : null;
+    }
+
+    private static string FormatTokens(long tokens) => tokens switch
+    {
+        >= 1_000_000 => $"{tokens / 1_000_000d:0.#}М",
+        >= 1_000 => $"{tokens / 1_000d:0.#}К",
+        _ => tokens.ToString(),
+    };
 
     private static string BuildTitle(string text)
     {

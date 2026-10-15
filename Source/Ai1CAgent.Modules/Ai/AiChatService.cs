@@ -50,11 +50,12 @@ public sealed class AiChatService(
         {
             var text = update.Text;
             var reasoning = ExtractReasoning(update.Contents);
+            var usage = ExtractUsage(update.Contents);
 
-            if (text.Length == 0 && reasoning.Length == 0)
+            if (text.Length == 0 && reasoning.Length == 0 && usage is null)
                 continue;
 
-            yield return new AiChatChunk(text, reasoning);
+            yield return new AiChatChunk(text, reasoning, usage);
         }
     }
 
@@ -82,6 +83,17 @@ public sealed class AiChatService(
         }
 
         return builder?.ToString() ?? string.Empty;
+    }
+
+    private static AiTokenUsage? ExtractUsage(IEnumerable<AIContent> contents)
+    {
+        foreach (var content in contents)
+        {
+            if (content is UsageContent { Details: { } details })
+                return new AiTokenUsage(details.InputTokenCount, details.OutputTokenCount, details.TotalTokenCount);
+        }
+
+        return null;
     }
 
     private static List<ChatMessage> ToChatMessages(IReadOnlyCollection<AiChatMessage> messages)

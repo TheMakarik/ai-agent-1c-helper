@@ -355,9 +355,15 @@ public sealed class MainViewModel : ViewModelBase
         {
             await foreach (var chunk in _chatService.StreamAsync(SelectedModel, history, cancellationToken))
             {
-                answer ??= dialog.AddStreamingMessage();
-                answer.AppendReasoning(chunk.Reasoning);
-                answer.AppendText(chunk.Text);
+                if (chunk.Text.Length > 0 || chunk.Reasoning.Length > 0)
+                {
+                    answer ??= dialog.AddStreamingMessage();
+                    answer.AppendReasoning(chunk.Reasoning);
+                    answer.AppendText(chunk.Text);
+                }
+
+                if (chunk.Usage is { } usage)
+                    dialog.ApplyUsage(usage);
             }
         }
         finally
