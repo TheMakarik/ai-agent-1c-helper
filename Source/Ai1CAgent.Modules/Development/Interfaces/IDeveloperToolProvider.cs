@@ -4,5 +4,5 @@ namespace Ai1CAgent.Modules.Development.Interfaces;
 
 public interface IDeveloperToolProvider
 {
-    IReadOnlyList<AITool> GetTools(string rootPath, bool allowWrite);
+    IReadOnlyList<AITool> GetTools(string rootPath, bool allowWrite, bool allowTerminal);
 }

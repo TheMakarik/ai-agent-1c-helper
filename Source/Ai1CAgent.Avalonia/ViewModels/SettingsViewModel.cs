@@ -27,6 +27,7 @@ public sealed class SettingsViewModel : ViewModelBase
     private bool _isSaving;
     private bool _isDirty;
     private bool _allowWrite;
+    private bool _allowTerminal;
 
     public SettingsViewModel(
         IAiSettingsStore settingsStore,
@@ -37,6 +38,7 @@ public sealed class SettingsViewModel : ViewModelBase
         _appSettingsStore = appSettingsStore;
         _logger = logger;
         _allowWrite = appSettingsStore.Get().AllowWrite;
+        _allowTerminal = appSettingsStore.Get().AllowTerminal;
 
         Providers = [];
         BuildProviders();
@@ -94,7 +96,17 @@ public sealed class SettingsViewModel : ViewModelBase
         set
         {
             this.RaiseAndSetIfChanged(ref _allowWrite, value);
-            _ = _appSettingsStore.SaveAsync(new AppSettings(value), CancellationToken.None);
+            _ = _appSettingsStore.SaveAsync(new AppSettings(value, AllowTerminal), CancellationToken.None);
+        }
+    }
+
+    public bool AllowTerminal
+    {
+        get => _allowTerminal;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _allowTerminal, value);
+            _ = _appSettingsStore.SaveAsync(new AppSettings(AllowWrite, value), CancellationToken.None);
         }
     }
 

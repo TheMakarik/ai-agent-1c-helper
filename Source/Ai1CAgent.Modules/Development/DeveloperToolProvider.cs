@@ -81,7 +81,7 @@ public sealed class DeveloperToolProvider(ILogger<DeveloperToolProvider> logger)
         }
         """;
 
-    public IReadOnlyList<AITool> GetTools(string rootPath, bool allowWrite)
+    public IReadOnlyList<AITool> GetTools(string rootPath, bool allowWrite, bool allowTerminal)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
 
@@ -97,11 +97,15 @@ public sealed class DeveloperToolProvider(ILogger<DeveloperToolProvider> logger)
             Read("GitTags", "Показать теги репозитория.", NoArgs, rootPath),
             Read("GitStashList", "Показать сохранённые stash-записи.", NoArgs, rootPath),
             Read("CSharpOutline", "Показать структуру файла C# (пространства имён, типы, методы, свойства).", PathSchema, rootPath),
-            new ContextFunction("RunCommand", "Выполнить команду оболочки в папке проекта и вернуть вывод.", CommandSchema,
-                (arguments, cancellationToken) => Run(arguments, rootPath, cancellationToken)),
             new ContextFunction("CanWrite", "Проверить, разрешена ли запись файлов (режим записи в настройках).", NoArgs,
                 (_, _) => ValueTask.FromResult(allowWrite ? "Запись разрешена." : "Запись запрещена.")),
         };
+
+        if (allowTerminal)
+        {
+            tools.Add(new ContextFunction("RunCommand", "Выполнить команду оболочки в папке проекта и вернуть вывод.", CommandSchema,
+                (arguments, cancellationToken) => Run(arguments, rootPath, cancellationToken)));
+        }
 
         if (!allowWrite)
             return tools;

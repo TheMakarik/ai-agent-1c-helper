@@ -74,6 +74,27 @@
                                     <TextBlock
                                         Grid.Column="0"
                                         Classes="settings-label"
+                                        Text="Терминал"
+                                        VerticalAlignment="Center" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Spacing="4">
+                                        <ToggleSwitch
+                                            Content="Разрешить ИИ выполнять команды терминала"
+                                            IsChecked="{Binding AllowTerminal, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Classes="page-subtitle"
+                                            Text="Включает функцию RunCommand — выполнение команд оболочки в папке проекта. По умолчанию выключено."
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Classes="settings-card">
+                                <Grid ColumnDefinitions="190,*" ColumnSpacing="16">
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        Classes="settings-label"
                                         Text="Провайдер"
                                         VerticalAlignment="Center" />
                                     <Grid

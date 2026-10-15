@@ -112,9 +112,11 @@ public sealed class AiChatService(
 
         if (!string.IsNullOrWhiteSpace(configurationPath) && Directory.Exists(configurationPath))
         {
-            var allowWrite = appSettingsStore.Get()?.AllowWrite ?? false;
+            var settings = appSettingsStore.Get();
+            var allowWrite = settings?.AllowWrite ?? false;
+            var allowTerminal = settings?.AllowTerminal ?? false;
             tools.AddRange(configurationToolProvider.GetTools(configurationPath));
-            tools.AddRange(developerToolProvider.GetTools(configurationPath, allowWrite));
+            tools.AddRange(developerToolProvider.GetTools(configurationPath, allowWrite, allowTerminal));
         }
         else if (!string.IsNullOrWhiteSpace(configurationPath))
         {
