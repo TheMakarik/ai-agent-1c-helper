@@ -181,4 +181,12 @@ public partial class MainWindow : Window
 
         await viewModel.CommitRenameDialogAsync(dialog, CancellationToken.None);
     }
+
+    private async void OnDeleteDialogClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { DataContext: ChatDialogViewModel dialog } || DataContext is not MainViewModel viewModel)
+            return;
+
+        await viewModel.DeleteDialogAsync(dialog, CancellationToken.None);
+    }
 }

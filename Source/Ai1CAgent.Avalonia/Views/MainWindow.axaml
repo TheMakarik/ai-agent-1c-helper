@@ -224,6 +224,14 @@
                                                     IconVariant="Regular" />
                                             </MenuItem.Icon>
                                         </MenuItem>
+                                        <MenuItem Click="OnDeleteDialogClick" Header="Удалить">
+                                            <MenuItem.Icon>
+                                                <ic:FluentIcon
+                                                    Icon="Delete"
+                                                    IconSize="Size16"
+                                                    IconVariant="Regular" />
+                                            </MenuItem.Icon>
+                                        </MenuItem>
                                     </ContextMenu>
                                 </Panel.ContextMenu>
                             </Panel>

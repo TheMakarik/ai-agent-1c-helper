@@ -484,6 +484,22 @@ public sealed class MainViewModel : ViewModelBase
         dialog.IsRenaming = false;
     }
 
+    public async Task DeleteDialogAsync(ChatDialogViewModel dialog, CancellationToken cancellationToken)
+    {
+        if (dialog.SessionId is { } sessionId)
+            await _chatStore.DeleteSessionAsync(sessionId, cancellationToken).ConfigureAwait(false);
+
+        Dialogs.Remove(dialog);
+
+        if (Dialogs.Count == 0)
+            Dialogs.Add(CreateDialogViewModel());
+
+        if (ReferenceEquals(dialog, SelectedDialog))
+            SelectedDialog = Dialogs[0];
+
+        SaveUiState();
+    }
+
     private async Task SelectConfigurationAsync()
     {
         var dialog = SelectedDialog;
