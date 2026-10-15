@@ -116,6 +116,9 @@ public sealed class MainViewModel : ViewModelBase
         CommitRenameDialogCommand = ReactiveCommand.CreateFromTask<ChatDialogViewModel>(CommitRenameDialogAsync);
         CommitRenameDialogCommand.ThrownExceptions.Subscribe(ex => _logger.LogError(ex, "Не удалось переименовать диалог"));
 
+        CompressCommand = ReactiveCommand.CreateFromTask(CompressAsync);
+        CompressCommand.ThrownExceptions.Subscribe(ex => _logger.LogError(ex, "Не удалось сжать контекст"));
+
         SelectConfigurationCommand = ReactiveCommand.CreateFromTask(SelectConfigurationAsync);
         SelectConfigurationCommand.ThrownExceptions.Subscribe(ex =>
             _logger.LogError(ex, "Не удалось выбрать папку выгрузки конфигурации"));
@@ -253,6 +256,8 @@ public sealed class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> SendCommand { get; }
 
     public ReactiveCommand<Unit, Unit> NewDialogCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> CompressCommand { get; }
 
     public ReactiveCommand<AiModel, Unit> SelectChatModelCommand { get; }
 
@@ -631,6 +636,48 @@ public sealed class MainViewModel : ViewModelBase
             SelectedDialog?.SessionId);
 
         _ = _uiStateStore.SaveAsync(state, CancellationToken.None);
+    }
+
+    private async Task CompressAsync(CancellationToken cancellationToken)
+    {
+        var dialog = SelectedDialog;
+
+        if (SelectedModel is null || dialog is null || !dialog.CanCompress)
+            return;
+
+        var history = dialog.ToAiMessages();
+        var writer = dialog.AddStreamingMessage();
+        var summary = new StringBuilder();
+
+        try
+        {
+            await foreach (var chunk in _chatService.CompressAsync(SelectedModel, history, cancellationToken))
+            {
+                if (chunk.Text.Length > 0 || chunk.Reasoning.Length > 0)
+                {
+                    writer.AppendReasoning(chunk.Reasoning);
+                    writer.AppendText(chunk.Text);
+                    summary.Append(chunk.Text);
+                }
+            }
+        }
+        finally
+        {
+            writer.FinishThinking();
+        }
+
+        var compressed = summary.ToString().Trim();
+
+        if (compressed.Length == 0)
+            return;
+
+        dialog.ApplyCompression(compressed);
+
+        if (dialog.SessionId is { } sessionId)
+        {
+            await _chatStore.DeleteMessagesAsync(sessionId, cancellationToken).ConfigureAwait(false);
+            await AppendMessageAsync(sessionId, AiChatRole.Assistant, compressed, string.Empty, null, string.Empty, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private async Task<long> EnsureSessionAsync(ChatDialogViewModel dialog, CancellationToken cancellationToken)

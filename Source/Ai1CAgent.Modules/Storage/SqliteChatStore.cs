@@ -140,6 +140,16 @@ public sealed class SqliteChatStore(Database database) : IChatStore
         return message with { Id = id, CreatedAt = createdAt };
     }
 
+    public async Task DeleteMessagesAsync(long sessionId, CancellationToken cancellationToken)
+    {
+        await using var connection = await database.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            "DELETE FROM chat_message WHERE session_id = $sessionId",
+            new { sessionId },
+            cancellationToken: cancellationToken)).ConfigureAwait(false);
+    }
+
     public async Task<int> ReassignOrphanSessionsAsync(long projectId, CancellationToken cancellationToken)
     {
         await using var connection = await database.OpenAsync(cancellationToken).ConfigureAwait(false);

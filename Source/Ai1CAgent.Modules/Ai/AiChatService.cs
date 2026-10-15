@@ -76,6 +76,35 @@ public sealed class AiChatService(
         }
     }
 
+    public async IAsyncEnumerable<AiChatChunk> CompressAsync(
+        AiModel model,
+        IReadOnlyCollection<AiChatMessage> messages,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(messages);
+
+        logger.LogInformation("Сжатие контекста для {Provider}/{Model}", model.ProviderKey, model.Name);
+
+        var client = chatClientFactory.GetClient(model);
+        var chatMessages = new List<ChatMessage> { new(ChatRole.System, CompressionPrompt) };
+        chatMessages.AddRange(ToChatMessages(messages));
+
+        var updates = client.GetStreamingResponseAsync(chatMessages, options: null, cancellationToken);
+
+        await foreach (var update in updates.ConfigureAwait(false))
+        {
+            var text = update.Text;
+            var reasoning = ExtractReasoning(update.Contents);
+            var usage = ExtractUsage(update.Contents);
+
+            if (text.Length == 0 && reasoning.Length == 0 && usage is null)
+                continue;
+
+            yield return new AiChatChunk(text, reasoning, usage);
+        }
+    }
+
     private ChatOptions? CreateChatOptions(string? configurationPath, long? projectId)
     {
         List<AITool> tools = [.. systemDocumentationToolProvider.GetTools()];
@@ -118,6 +147,11 @@ public sealed class AiChatService(
     [
         "command", "path", "ref", "commit", "query", "name", "message", "pattern", "url",
     ];
+
+    private const string CompressionPrompt =
+        "Ты — модуль сжатия контекста диалога. Сократи переписку: убери воду, повторы и несущественное, "
+        + "сохрани факты, принятые решения, договорённости, имена, пути, фрагменты кода и незавершённые задачи. "
+        + "Верни связный краткий пересказ, который полностью заменит историю. Не задавай вопросов и не комментируй процесс.";
 
     private static string? BuildToolDetail(IDictionary<string, object?>? arguments)
     {

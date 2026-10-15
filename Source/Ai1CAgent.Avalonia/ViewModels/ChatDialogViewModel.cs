@@ -58,6 +58,8 @@ public sealed class ChatDialogViewModel : ViewModelBase
 
     public bool HasContextUsage => TotalTokens() is not null;
 
+    public bool CanCompress => TotalTokens() is >= 100_000;
+
     public string ContextUsageText => TotalTokens() is { } total ? FormatTokens(total) : string.Empty;
 
     public string ContextUsageTooltip => TotalTokens() is { } total
@@ -133,6 +135,18 @@ public sealed class ChatDialogViewModel : ViewModelBase
         this.RaisePropertyChanged(nameof(HasContextUsage));
         this.RaisePropertyChanged(nameof(ContextUsageText));
         this.RaisePropertyChanged(nameof(ContextUsageTooltip));
+        this.RaisePropertyChanged(nameof(CanCompress));
+    }
+
+    public void ApplyCompression(string summary)
+    {
+        Messages.Clear();
+        Messages.Add(new ChatMessageViewModel(AiChatRole.Assistant, summary));
+        _usage = null;
+        this.RaisePropertyChanged(nameof(HasContextUsage));
+        this.RaisePropertyChanged(nameof(ContextUsageText));
+        this.RaisePropertyChanged(nameof(ContextUsageTooltip));
+        this.RaisePropertyChanged(nameof(CanCompress));
     }
 
     public IReadOnlyCollection<AiChatMessage> ToAiMessages()

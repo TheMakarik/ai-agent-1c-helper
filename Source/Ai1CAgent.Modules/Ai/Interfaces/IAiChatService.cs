@@ -17,4 +17,9 @@ public interface IAiChatService
         string? configurationPath,
         long? projectId,
         CancellationToken cancellationToken);
+
+    IAsyncEnumerable<AiChatChunk> CompressAsync(
+        AiModel model,
+        IReadOnlyCollection<AiChatMessage> messages,
+        CancellationToken cancellationToken);
 }

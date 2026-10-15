@@ -162,7 +162,7 @@
             Background="{StaticResource SidebarBrush}">
             <Grid
                 Margin="12,8,12,12"
-                RowDefinitions="Auto,Auto,Auto,*,Auto,Auto"
+                RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto"
                 RowSpacing="8">
                 <StackPanel
                     Grid.Row="0"
@@ -239,8 +239,26 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <StackPanel
+                <Button
                     Grid.Row="4"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Left"
+                    Classes="project-folder"
+                    Command="{Binding CompressCommand}"
+                    IsVisible="{Binding SelectedDialog.CanCompress}"
+                    ToolTip.Tip="Сжать контекст диалога: убрать воду и суммаризировать историю">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ic:FluentIcon
+                            VerticalAlignment="Center"
+                            Icon="ArrowCollapseAll"
+                            IconSize="Size16"
+                            IconVariant="Regular" />
+                        <TextBlock VerticalAlignment="Center" Text="Сжать контекст" />
+                    </StackPanel>
+                </Button>
+
+                <StackPanel
+                    Grid.Row="5"
                     Margin="8,0,0,0"
                     HorizontalAlignment="Left"
                     Orientation="Horizontal"
@@ -261,7 +279,7 @@
 
                 <!--  Папка активного проекта: иконка, ховер, открытие в проводнике  -->
                 <Button
-                    Grid.Row="5"
+                    Grid.Row="6"
                     Margin="8,0,0,0"
                     Padding="0,4"
                     HorizontalAlignment="Stretch"

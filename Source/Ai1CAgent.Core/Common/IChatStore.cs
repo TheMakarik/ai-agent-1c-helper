@@ -18,5 +18,7 @@ public interface IChatStore
 
     Task<ChatMessageRecord> AppendMessageAsync(ChatMessageRecord message, CancellationToken cancellationToken);
 
+    Task DeleteMessagesAsync(long sessionId, CancellationToken cancellationToken);
+
     Task<int> ReassignOrphanSessionsAsync(long projectId, CancellationToken cancellationToken);
 }
