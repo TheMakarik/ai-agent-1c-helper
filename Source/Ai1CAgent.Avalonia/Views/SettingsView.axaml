@@ -345,10 +345,22 @@
                                                 <ToggleButton
                                                     Grid.Column="1"
                                                     Classes="settings-reveal"
-                                                    Content="Показать"
                                                     IsChecked="{Binding RevealApiKey}"
                                                     ToolTip.Tip="Показать или скрыть API-ключ"
-                                                    VerticalAlignment="Center" />
+                                                    VerticalAlignment="Center">
+                                                    <Panel>
+                                                        <ic:FluentIcon
+                                                            Icon="Eye"
+                                                            IconSize="Size16"
+                                                            IconVariant="Regular"
+                                                            IsVisible="{Binding !RevealApiKey}" />
+                                                        <ic:FluentIcon
+                                                            Icon="EyeOff"
+                                                            IconSize="Size16"
+                                                            IconVariant="Regular"
+                                                            IsVisible="{Binding RevealApiKey}" />
+                                                    </Panel>
+                                                </ToggleButton>
                                             </Grid>
                                         </StackPanel>
 
