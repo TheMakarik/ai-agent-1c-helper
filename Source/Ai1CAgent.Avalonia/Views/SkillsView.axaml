@@ -19,7 +19,7 @@
             Grid.Row="1"
             Orientation="Horizontal"
             Spacing="8">
-            <Button Classes="settings-add" Click="OnAddGlobalClick" ToolTip.Tip="Создать общий скилл">
+            <Button Classes="settings-add" Click="OnAddGlobalClick" ToolTip.Tip="Создать общую документацию">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <ic:FluentIcon
                         Icon="Add"
@@ -32,7 +32,7 @@
                 Classes="settings-add"
                 Click="OnAddLocalClick"
                 IsEnabled="{Binding HasProject}"
-                ToolTip.Tip="Создать скилл текущего проекта">
+                ToolTip.Tip="Создать документацию текущего проекта">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <ic:FluentIcon
                         Icon="FolderAdd"
@@ -62,7 +62,7 @@
                             <ContextMenu>
                                 <MenuItem
                                     Click="OnAddSkillClick"
-                                    Header="Добавить скилл"
+                                    Header="Добавить документацию"
                                     IsVisible="{Binding CanAddSkill}">
                                     <MenuItem.Icon>
                                         <ic:FluentIcon

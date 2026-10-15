@@ -62,7 +62,7 @@ public sealed class SkillsViewModel : ViewModelBase
         if (scope is SkillScope.Local && _projectId is null)
             return;
 
-        EditSkill.Handle(new SkillEditRequest("Новый скилл", string.Empty, Editable: true, AskName: true)).Subscribe(
+        EditSkill.Handle(new SkillEditRequest("Новая документация", string.Empty, Editable: true, AskName: true)).Subscribe(
             result => ApplyNew(scope, result),
             exception => _logger.LogError(exception, "Не удалось создать скилл"));
     }
