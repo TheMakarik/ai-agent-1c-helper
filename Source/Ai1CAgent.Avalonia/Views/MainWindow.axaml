@@ -15,7 +15,7 @@
     MinHeight="480"
     Background="{StaticResource ContentBrush}"
     Foreground="{StaticResource TextBrush}"
-    Icon="/Assets/avalonia-logo.ico"
+    Icon="avares://Ai1CAgent.Avalonia/Assets/apogey-logo.png"
     Title="{Binding Title}">
 
     <Window.Styles>

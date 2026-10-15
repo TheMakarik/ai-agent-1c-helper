@@ -8,8 +8,9 @@
     Height="640"
     MinWidth="520"
     MinHeight="360"
-    Background="{StaticResource ContentBrush}"
+    Background="{StaticResource SidebarBrush}"
     Foreground="{StaticResource TextBrush}"
+    Icon="avares://Ai1CAgent.Avalonia/Assets/apogey-logo.png"
     Title="{Binding Name}">
 
     <Grid
