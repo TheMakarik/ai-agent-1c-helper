@@ -1,0 +1,11 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Аудит уязвимостей NuGet обращается к источнику nuget.org; без сети он даёт
+         предупреждение NU1900, которое при TreatWarningsAsErrors ломает сборку.
+         Отключаем аудит, чтобы сборка не зависела от доступности сети. -->
+    <NuGetAudit>false</NuGetAudit>
+    <NoWarn>$(NoWarn);NU1900</NoWarn>
+  </PropertyGroup>
+
+</Project>
